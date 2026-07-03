@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrendapro — Ficha Inquilino</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --slate-950:#0c1220;--slate-900:#111827;--slate-800:#1e293b;--slate-700:#334155;
+  --slate-600:#475569;--slate-500:#64748b;--slate-400:#94a3b8;--slate-300:#cbd5e1;
+  --slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+  --indigo:#4f46e5;--indigo-l:#6366f1;--indigo-bg:#eef2ff;
+  --green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3c7;
+  --red:#dc2626;--red-bg:#fee2e2;--blue:#2563eb;--blue-bg:#dbeafe;
+  --purple:#7c3aed;--purple-bg:#ede9fe;--orange:#ea580c;--orange-bg:#ffedd5;
+  --radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+}
+body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slate-900);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* HEADER */
+.app-header{background:var(--slate-950);color:white;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.brand{font-family:'DM Serif Display',serif;font-size:18px;color:white}
+.brand span{color:#6366f1}
+.header-actions{display:flex;gap:8px}
+.btn-h{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-h:hover{background:rgba(255,255,255,.18)}
+.btn-h.primary{background:var(--indigo);border-color:var(--indigo)}
+.btn-h.primary:hover{background:var(--indigo-l)}
+
+/* SELECTOR SCREEN */
+#screen-selector{min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;padding:32px 16px}
+.selector-hero{text-align:center;margin-bottom:14px;margin-top:4px}
+.selector-hero h1{font-family:'DM Serif Display',serif;font-size:22px;color:var(--slate-900);margin-bottom:4px}
+.selector-hero p{color:var(--slate-500);font-size:13px}
+.selector-box{background:white;border-radius:14px;box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:560px}
+.selector-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sel-stat{background:var(--slate-50);border-radius:8px;padding:8px 6px;text-align:center}
+.sel-stat .n{font-size:17px;font-weight:700;color:var(--indigo)}
+.sel-stat .l{font-size:10px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.05em}
+
+/* Search */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap input{width:100%;border:2px solid var(--slate-200);border-radius:8px;padding:11px 16px 11px 40px;font-family:inherit;font-size:14px;color:var(--slate-900);outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--indigo)}
+.search-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--slate-400);font-size:16px}
+.search-wrap input::placeholder{color:var(--slate-400)}
+
+/* Filters */
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;border:1.5px solid var(--slate-200);background:white;font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .15s}
+.pill:hover{border-color:var(--indigo);color:var(--indigo)}
+.pill.active{background:var(--indigo);border-color:var(--indigo);color:white}
+
+/* Lista */
+.ua-list{display:flex;flex-direction:column;gap:6px;max-height:380px;overflow-y:auto;padding-right:4px}
+.ua-list::-webkit-scrollbar{width:4px}
+.ua-list::-webkit-scrollbar-track{background:var(--slate-100)}
+.ua-list::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:2px}
+.ua-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--slate-200);border-radius:8px;cursor:pointer;transition:all .15s}
+.ua-item:hover{border-color:var(--indigo);background:var(--indigo-bg)}
+.ua-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.ua-info{flex:1;min-width:0}
+.ua-name{font-size:13px;font-weight:600;color:var(--slate-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ua-addr{font-size:11px;color:var(--slate-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ua-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.ua-renta{font-size:13px;font-weight:700;color:var(--slate-900)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em}
+.badge.vivienda{background:var(--blue-bg);color:var(--blue)}
+.badge.local{background:var(--orange-bg);color:var(--orange)}
+.badge.oficina{background:var(--purple-bg);color:var(--purple)}
+.badge.huerto{background:var(--green-bg);color:var(--green)}
+.ua-empty{text-align:center;padding:32px;color:var(--slate-400)}
+.ua-empty .ico{font-size:32px;margin-bottom:8px}
+
+/* FICHA SCREEN */
+#screen-ficha{display:none;padding-bottom:80px}
+
+/* BREADCRUMB */
+.breadcrumb{background:white;border-bottom:1px solid var(--slate-200);padding:10px 24px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--slate-500)}
+.breadcrumb a{color:var(--indigo);text-decoration:none;cursor:pointer}
+.breadcrumb a:hover{text-decoration:underline}
+.breadcrumb .sep{color:var(--slate-300)}
+
+.page{max-width:960px;margin:0 auto;padding:24px 16px}
+
+/* HERO */
+.hero-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.hero-top{background:linear-gradient(135deg,var(--slate-900) 0%,var(--slate-800) 100%);padding:24px;display:flex;align-items:center;gap:20px}
+.avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;flex-shrink:0;border:3px solid rgba(255,255,255,.2)}
+.hero-info h1{font-family:'DM Serif Display',serif;font-size:20px;color:white;line-height:1.2;margin-bottom:4px}
+.hero-info .addr{color:rgba(255,255,255,.6);font-size:12px;display:flex;align-items:center;gap:5px}
+.hero-badges{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.badge-lg{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-lg.green{background:var(--green-bg);color:var(--green)}
+.badge-lg.blue{background:var(--blue-bg);color:var(--blue)}
+.badge-lg.orange{background:var(--orange-bg);color:var(--orange)}
+.badge-lg.purple{background:var(--purple-bg);color:var(--purple)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--slate-200)}
+.stat-item{padding:12px 14px;border-right:1px solid var(--slate-200)}
+.stat-item:last-child{border-right:none}
+.stat-label{font-size:10px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.stat-value{font-size:17px;font-weight:700;color:var(--slate-900)}
+.stat-value.green{color:var(--green)}
+.stat-sub{font-size:10px;color:var(--slate-500);margin-top:1px}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:5px;margin-bottom:16px}
+.tab{flex:1;padding:8px 6px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12px;font-weight:500;color:var(--slate-500);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.tab:hover{background:var(--slate-100);color:var(--slate-700)}
+.tab.active{background:var(--indigo);color:white}
+
+/* SECTIONS */
+.section{display:none}
+.section.active{display:block}
+
+/* CARD */
+.card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.card-header{padding:12px 18px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:12px;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:7px}
+.card-title .dot{width:7px;height:7px;border-radius:50%;background:var(--indigo)}
+.card-body{padding:18px}
+
+/* DATA GRID */
+.data-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.data-grid.cols3{grid-template-columns:repeat(3,1fr)}
+.data-field label{display:block;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.data-field .val{font-size:13px;color:var(--slate-900);font-weight:500}
+.data-field .val a{color:var(--indigo);text-decoration:none}
+.data-field .val a:hover{text-decoration:underline}
+.data-field .val.mono{font-family:monospace;font-size:12px;color:var(--slate-700)}
+.sec-div{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate-400);padding:14px 0 6px;display:flex;align-items:center;gap:10px}
+.sec-div::after{content:'';flex:1;height:1px;background:var(--slate-200)}
+
+/* TIMELINE */
+.timeline{padding:4px 0}
+.tl-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--slate-100)}
+.tl-item:last-child{border-bottom:none}
+.tl-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.tl-content{flex:1}
+.tl-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.tl-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.tl-date{font-size:11px;color:var(--slate-400);margin-left:auto;white-space:nowrap}
+.tl-text{font-size:13px;color:var(--slate-700);line-height:1.5}
+.tl-llamada .tl-icon{background:var(--blue-bg)}.tl-llamada .tl-type{color:var(--blue)}
+.tl-email .tl-icon{background:var(--indigo-bg)}.tl-email .tl-type{color:var(--indigo)}
+.tl-reclamacion .tl-icon{background:var(--red-bg)}.tl-reclamacion .tl-type{color:var(--red)}
+.tl-nota .tl-icon{background:var(--slate-100)}.tl-nota .tl-type{color:var(--slate-500)}
+.tl-visita .tl-icon{background:var(--green-bg)}.tl-visita .tl-type{color:var(--green)}
+.tl-carta .tl-icon{background:var(--amber-bg)}.tl-carta .tl-type{color:var(--amber)}
+
+/* ADD COMM */
+.add-btn{width:100%;padding:9px;border:2px dashed var(--slate-200);border-radius:8px;background:transparent;color:var(--slate-400);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px}
+.add-btn:hover{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-bg)}
+.comm-form{display:none;background:var(--slate-50);border:1px solid var(--slate-200);border-radius:8px;padding:14px;margin-top:10px}
+.comm-form.vis{display:block}
+.form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px}
+.fg label{font-size:10px;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:.06em}
+.fg select,.fg input,.fg textarea{border:1px solid var(--slate-200);border-radius:6px;padding:7px 10px;font-family:inherit;font-size:13px;color:var(--slate-900);background:white;outline:none;transition:border-color .15s}
+.fg select:focus,.fg input:focus,.fg textarea:focus{border-color:var(--indigo)}
+.fg textarea{resize:vertical;min-height:65px;width:100%}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.btn-cancel{padding:7px 14px;border-radius:6px;border:1px solid var(--slate-200);background:white;font-family:inherit;font-size:13px;color:var(--slate-600);cursor:pointer}
+.btn-save{padding:7px 16px;border-radius:6px;border:none;background:var(--indigo);font-family:inherit;font-size:13px;color:white;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-save:hover{background:var(--indigo-l)}
+
+/* DOCS */
+.doc-list{display:flex;flex-direction:column;gap:7px}
+.doc-item{display:flex;align-items:center;gap:11px;padding:11px 14px;border:1.5px solid var(--slate-200);border-radius:8px;cursor:pointer;transition:all .15s}
+.doc-item:hover{border-color:var(--indigo);background:var(--indigo-bg)}
+.doc-icon{font-size:18px;flex-shrink:0}
+.doc-info{flex:1}
+.doc-name{font-size:13px;font-weight:500;color:var(--slate-900)}
+.doc-meta{font-size:11px;color:var(--slate-400)}
+
+/* PRINT */
+.print-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);overflow-y:auto;padding:32px 16px;justify-content:center}
+.print-overlay.vis{display:flex}
+.print-doc{background:white;width:100%;max-width:720px;border-radius:8px;box-shadow:var(--shadow-lg);overflow:hidden}
+.print-tb{background:var(--slate-900);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.print-tb span{color:white;font-size:13px;font-weight:500}
+.print-tb .acts{display:flex;gap:8px}
+.print-cnt{padding:36px 44px}
+.print-head{border-bottom:3px solid var(--slate-900);padding-bottom:18px;margin-bottom:24px}
+.print-head h1{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:3px}
+.print-head .sub{color:var(--slate-500);font-size:13px}
+.print-sec{margin-bottom:20px}
+.print-sec h2{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--slate-500);font-weight:700;border-bottom:1px solid var(--slate-200);padding-bottom:5px;margin-bottom:12px}
+.print-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 18px}
+.print-field label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-400);display:block;margin-bottom:1px}
+.print-field .v{font-size:12px;color:var(--slate-900);font-weight:500}
+.print-foot{margin-top:32px;padding-top:12px;border-top:1px solid var(--slate-200);display:flex;justify-content:space-between;font-size:10px;color:var(--slate-400)}
+
+/* MOBILE */
+@media(max-width:600px){
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .stat-item{padding:10px 12px;border-right:1px solid var(--slate-200)}
+  .stat-item:nth-child(even){border-right:none}
+  .data-grid{grid-template-columns:1fr}
+  .data-grid.cols3{grid-template-columns:repeat(2,1fr)}
+  .hero-badges{display:none}
+  .selector-stats{grid-template-columns:repeat(3,1fr)}
+  .print-cnt{padding:20px 16px}
+  .print-grid{grid-template-columns:repeat(2,1fr)}
+  .tabs{flex-wrap:wrap;gap:4px}
+  .tab{flex:1 1 31%;font-size:11px;padding:7px 4px}
+}
+.foto-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.foto-thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--slate-200)}
+.foto-thumb-wrap{position:relative;display:inline-block}
+.foto-del{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;line-height:1;cursor:pointer}
+.tl-actions{margin-top:8px;display:flex;gap:14px}
+.btn-link{background:none;border:none;color:var(--indigo,#4f46e5);font-size:12px;cursor:pointer;padding:0;font-family:inherit}
+.btn-link.danger{color:#dc2626}
+/* PRINT INFORME */
+.ph-name{font-family:'DM Serif Display',serif;font-size:20px;font-weight:700;margin-bottom:2px}
+.ph-addr{font-size:11px;color:#666;margin-bottom:6px}
+.ph-div{border:none;border-top:2px solid #1e293b;margin-bottom:10px}
+.pt{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
+.pt td,.pt th{padding:3px 6px;vertical-align:top}
+.pt .lbl{color:#64748b;width:38%;font-weight:500;white-space:nowrap}
+.pt .sec{background:#f1f5f9;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 6px;color:#334155}
+.pt tr:nth-child(even) td{background:#fafafa}
+.pt-sec{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#334155;background:#f1f5f9;padding:4px 6px;margin:8px 0 4px}
+.pt-entry{border-left:2px solid #e2e8f0;padding:4px 8px;margin-bottom:6px;font-size:11px}
+.pt-entry-meta{font-size:10px;color:#64748b;margin-bottom:2px}
+.pt-entry-text{color:#1e293b}
+.pt-fotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pt-foto{width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">Arrenda<span>·</span>pro</div>
+  <div class="header-actions">
+    <button class="btn-h" onclick="abrirModalBBDD()" title="Actualizar base de datos">📊 BBDD</button>
+    <button class="btn-h" id="btn-imprimir" style="display:none" onclick="showPrint()">🖨 Imprimir</button>
+    <button class="btn-h primary" id="btn-volver" style="display:none" onclick="volverSelector()">← Volver</button>
+  </div>
+</header>
+
+<!-- MODAL INFORME -->
+<div id="modal-informe" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:16px;padding:24px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-weight:700;font-size:16px;margin-bottom:14px">📄 Generar informe</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;font-size:14px">
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-datos" checked> Datos personales</label>
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-contrato" checked> Contrato</label>
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-clausulas" checked> Cláusulas del contrato</label>
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-piso" checked> Datos del piso</label>
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-notas" checked> Notas y comunicaciones</label>
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-plano" checked> Plano</label>
+      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-tecnica"> Ficha técnica</label>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-cancel" onclick="cerrarInforme()">Cancelar</button>
+      <button class="btn-save" onclick="generarInforme()">Generar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BBDD -->
+<div id="modal-bbdd" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:16px;padding:28px;width:90%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-weight:700;font-size:17px;margin-bottom:6px">📊 Actualizar base de datos</div>
+    <p style="font-size:13px;color:var(--slate-500);margin-bottom:18px">Selecciona el Excel <strong>BBDD_2026_MB_.xlsx</strong> (hoja "BD Contratos", cabeceras en fila 4). Se validarán los campos antes de actualizar.</p>
+    <input type="file" id="bbdd-input" accept=".xlsx,.xls" style="font-size:13px;margin-bottom:16px;width:100%">
+    <div id="bbdd-resultado" style="font-size:12px;margin-bottom:14px;min-height:20px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-cancel" onclick="cerrarModalBBDD()">Cancelar</button>
+      <button class="btn-save" onclick="procesarBBDD()">Cargar y validar</button>
+    </div>
+  </div>
+</div>
+
+<!-- SELECTOR -->
+<div id="screen-selector">
+  <div class="selector-hero">
+    <h1>Gestión de arrendatarios</h1>
+    <p>Selecciona una unidad para ver la ficha completa</p>
+  </div>
+  <div class="selector-box">
+    <div class="selector-stats">
+      <div class="sel-stat"><div class="n" id="cnt-total">0</div><div class="l">Total UAs</div></div>
+      <div class="sel-stat"><div class="n" id="cnt-vivienda">0</div><div class="l">Viviendas</div></div>
+      <div class="sel-stat"><div class="n" id="cnt-local">0</div><div class="l">Locales/Oficinas</div></div>
+    </div>
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input type="text" id="search" placeholder="Buscar por nombre, dirección, NIF..." oninput="renderLista()">
+    </div>
+    <div class="filter-row">
+      <button class="pill active" onclick="setFiltro('todos',this)">Todos</button>
+      <button class="pill" onclick="setFiltro('Vivienda',this)">Vivienda</button>
+      <button class="pill" onclick="setFiltro('Local',this)">Locales</button>
+      <button class="pill" onclick="setFiltro('Oficinas',this)">Oficinas</button>
+      <button class="pill" onclick="setFiltro('Huerto',this)">Huertos</button>
+    </div>
+    <div class="ua-list" id="ua-list"></div>
+  </div>
+</div>
+
+<!-- FICHA -->
+<div id="screen-ficha">
+  <nav class="breadcrumb">
+    <a onclick="volverSelector()">Propiedades</a>
+    <span class="sep">›</span>
+    <span id="bc-addr">—</span>
+    <span class="sep">›</span>
+    <span>Ficha inquilino</span>
+  </nav>
+  <div class="page">
+
+    <!-- HERO -->
+    <div class="hero-card">
+      <div class="hero-top">
+        <div class="avatar" id="f-avatar">—</div>
+        <div class="hero-info">
+          <h1 id="f-nombre">—</h1>
+          <div class="addr" id="f-addr-sub">—</div>
+        </div>
+        <div class="hero-badges" id="f-badges"></div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><div class="stat-label">Renta actual (BI)</div><div class="stat-value green" id="f-renta">—</div><div class="stat-sub" id="f-renta-sub">—</div></div>
+        <div class="stat-item"><div class="stat-label">Inicio contrato</div><div class="stat-value" id="f-inicio">—</div><div class="stat-sub" id="f-anos">—</div></div>
+        <div class="stat-item"><div class="stat-label">Fin contrato</div><div class="stat-value" id="f-fin">—</div><div class="stat-sub" id="f-tipo-fin-sub">—</div></div>
+        <div class="stat-item"><div class="stat-label">Superficie adoptada</div><div class="stat-value" id="f-m2">—</div><div class="stat-sub" id="f-m2-sub">—</div></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('datos',this)">👤 Datos</button>
+      <button class="tab" onclick="switchTab('notas',this)">📝 Notas/Ocupación <span id="cnt-notas" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 6px;font-size:10px">0</span></button>
+      <button class="tab" onclick="switchTab('comunicaciones',this)">💬 Comunicaciones <span id="cnt-comms" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 6px;font-size:10px">0</span></button>
+      <button class="tab" onclick="switchTab('plano',this)">📐 Plano</button>
+      <button class="tab" onclick="switchTab('fotos',this)">📷 Fotos</button>
+      <button class="tab" onclick="switchTab('tecnica',this)">🔧 Ficha Técnica</button>
+      <button class="tab" onclick="switchTab('documentos',this)">📄 Documentos</button>
+    </div>
+
+    <!-- TAB DATOS -->
+    <div class="section active" id="tab-datos">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Datos personales</div></div>
+        <div class="card-body">
+          <div class="data-grid cols3" id="f-personales"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Contrato</div></div>
+        <div class="card-body">
+          <div class="data-grid cols3" id="f-contrato"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Cláusulas del contrato</div></div>
+        <div class="card-body">
+          <div class="data-grid cols3" id="f-clausulas"></div>
+          <div style="margin-top:14px;border-top:1px solid var(--slate-100);padding-top:12px">
+            <div style="font-size:11px;font-weight:600;color:var(--slate-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Fotos de cláusulas</div>
+            <div class="foto-thumbs" id="cl-fotos-preview"></div>
+            <input type="file" id="cl-fotos-input" accept="image/*" multiple onchange="onFotosClausulas(event)" style="font-size:12px;margin-top:8px">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Datos del piso</div></div>
+        <div class="card-body">
+          <div class="data-grid cols3" id="f-piso"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB NOTAS / OCUPACIÓN -->
+    <div class="section" id="tab-notas">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot"></span>Notas de ocupación y situación real</div>
+        </div>
+        <div class="card-body">
+          <div class="timeline" id="notas-list">
+            <div class="ua-empty"><div class="ico">📝</div><p>Sin notas registradas.<br>Añade la primera usando el botón.</p></div>
+          </div>
+          <button class="add-btn" onclick="toggleNotaForm()">+ Añadir nota</button>
+          <div class="comm-form" id="nota-form">
+            <div class="form-row">
+              <div class="fg"><label>Fecha (opcional)</label><input type="date" id="nt-fecha"></div>
+            </div>
+            <div class="fg"><label>Nota</label><textarea id="nt-texto" placeholder="Quién vive realmente, situación contractual, datos económicos (locales), observaciones..."></textarea></div>
+            <div class="fg"><label>Fotos</label>
+              <input type="file" id="nt-fotos-input" accept="image/*" multiple onchange="onFotosSelected(event,'nota')" style="font-size:12px">
+              <div class="foto-thumbs" id="nt-fotos-preview"></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" onclick="toggleNotaForm()">Cancelar</button>
+              <button class="btn-save" onclick="guardarNota()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB COMUNICACIONES -->
+    <div class="section" id="tab-comunicaciones">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot"></span>Historial de comunicaciones</div>
+          <select id="filtro-tipo" onchange="filtrarComms()" style="border:1px solid var(--slate-200);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;color:var(--slate-700);outline:none">
+            <option value="todas">Todos</option>
+            <option value="llamada">Llamadas</option>
+            <option value="email">Emails</option>
+            <option value="reclamacion">Reclamaciones</option>
+            <option value="visita">Visitas</option>
+            <option value="nota">Notas</option>
+            <option value="carta">Cartas</option>
+          </select>
+        </div>
+        <div class="card-body">
+          <div class="timeline" id="timeline">
+            <div class="ua-empty"><div class="ico">💬</div><p>Sin comunicaciones registradas.<br>Añade la primera usando el botón.</p></div>
+          </div>
+          <button class="add-btn" onclick="toggleCommForm()">+ Añadir comunicación</button>
+          <div class="comm-form" id="comm-form">
+            <div class="form-row">
+              <div class="fg"><label>Tipo</label>
+                <select id="n-tipo">
+                  <option value="llamada">📞 Llamada</option>
+                  <option value="email">📧 Email</option>
+                  <option value="reclamacion">⚠️ Reclamación de pago</option>
+                  <option value="visita">🏠 Visita presencial</option>
+                  <option value="carta">📄 Carta / Burofax</option>
+                  <option value="nota">📝 Nota interna</option>
+                </select>
+              </div>
+              <div class="fg"><label>Fecha</label><input type="date" id="n-fecha"></div>
+            </div>
+            <div class="fg"><label>Descripción</label><textarea id="n-texto" placeholder="Describe la comunicación..."></textarea></div>
+            <div class="fg"><label>Fotos</label>
+              <input type="file" id="n-fotos-input" accept="image/*" multiple onchange="onFotosSelected(event,'comm')" style="font-size:12px">
+              <div class="foto-thumbs" id="n-fotos-preview"></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" onclick="toggleCommForm()">Cancelar</button>
+              <button class="btn-save" onclick="guardarComm()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB PLANO -->
+    <div class="section" id="tab-plano">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Croquis / plano del piso</div></div>
+        <div class="card-body">
+          <div id="plano-view"></div>
+          <input type="file" id="plano-input" accept="image/*" onchange="onPlanoSelected(event)" style="font-size:12px;margin-top:10px">
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB FOTOS -->
+    <div class="section" id="tab-fotos">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Carpeta de fotos en OneDrive</div></div>
+        <div class="card-body">
+          <div class="fg"><label>Enlace a la carpeta</label>
+            <input type="url" id="od-link-input" placeholder="https://onedrive.live.com/...">
+          </div>
+          <div class="form-actions">
+            <button class="btn-save" onclick="guardarOdLink()">Guardar enlace</button>
+          </div>
+          <div id="od-link-view" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB FICHA TÉCNICA -->
+    <div class="section" id="tab-tecnica">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Ficha técnica del piso (electrodomésticos e instalaciones)</div></div>
+        <div class="card-body">
+          <div id="ft-grid"></div>
+          <div class="form-actions" style="margin-top:14px">
+            <button class="btn-save" onclick="guardarTecnica()">Guardar ficha técnica</button>
+          </div>
+          <p style="font-size:11px;color:var(--slate-400);margin-top:10px">Nota: en producción esta pestaña vivirá en su propio <code>estado_piso.json</code>, igual que Incidencias usa <code>incidencias.json</code> — separado de los datos del contrato.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB DOCUMENTOS -->
+    <div class="section" id="tab-documentos">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>Documentos en OneDrive</div></div>
+        <div class="card-body">
+          <div class="doc-list" id="doc-list"></div>
+          <button class="add-btn" onclick="toggleDocForm()">+ Añadir documento</button>
+          <div class="comm-form" id="doc-form">
+            <div class="fg"><label>Nombre del documento</label>
+              <input type="text" id="doc-nombre" placeholder="Ej: Contrato arrendamiento, DNI, Ficha...">
+            </div>
+            <div class="fg"><label>Enlace OneDrive</label>
+              <input type="url" id="doc-url" placeholder="https://onedrive.live.com/...">
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" onclick="toggleDocForm()">Cancelar</button>
+              <button class="btn-save" onclick="guardarDoc()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRINT -->
+<div class="print-overlay" id="print-overlay">
+  <div class="print-doc">
+    <div class="print-tb">
+      <span>Vista previa de impresión</span>
+      <div class="acts">
+        <button class="btn-h" onclick="window.print()">🖨 Imprimir / PDF</button>
+        <button class="btn-h" onclick="hidePrint()">✕ Cerrar</button>
+      </div>
+    </div>
+    <div class="print-cnt" id="print-content"></div>
+  </div>
+</div>
+
+<script>
+const DATA = [{"ua": "1", "ref": "ROS", "refua": "ROS_0_2B-izda", "uso": "Local", "direccion": "Rosselló", "portal": "398", "piso": 0, "puerta": "2B-izda", "municipio": "Barcelona", "arrendatario": "Jose Walter Valencia García", "nif": "X3955043Q", "telefono": "603839897", "mail": "walter.v@hotmail.com", "tipo_contrato": "Local", "f_inicio": "15/03/2021", "contracte": 775.0, "cs_contrato": 25.0, "tipo_fin": "FIN V", "fecha_fin": "31/03/2029", "preaviso_fin": "4 meses", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1600.0, "fianza_adicional": null, "fi_importe": 1600.0, "via_cobro": "Recibo", "cl_repercusion": "Uso distinto vivienda, Incrementos impuestos", "cl_escalera": "SI", "cl_luz_escalera": "SI", "cl_tasas": "SI", "cl_ibi": "SI", "cl_agua": "SI", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no", "cl_seguro": "no", "m2_adoptada": 74.86, "m2_alquilable": 74.86, "precio_m2_alquilable": 11.88, "const_proym2": 74.86, "registro_cee": "80NVH2SCF", "calif_cee": "G-F", "fecha_fin_cee": "12/12/2027", "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 889.07, "pct_iva": 0.0}, {"ua": "1bis", "ref": "ROS", "refua": "ROS_0_1dda", "uso": "Local", "direccion": "Rosselló", "portal": "398", "piso": 0, "puerta": "1dda", "municipio": "Barcelona", "arrendatario": "Vannessa Pena", "nif": "X7946625X", "telefono": "629572359", "mail": "lawashceravalls18@gmail.com", "tipo_contrato": "Local", "f_inicio": "15/04/2021", "contracte": 700.0, "cs_contrato": 80.0, "tipo_fin": "FIN C", "fecha_fin": "15/04/2031", "preaviso_fin": "15/03/2031", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1400.0, "fianza_adicional": 1546.2, "fi_importe": 2946.2, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 46.42, "m2_alquilable": 46.42, "precio_m2_alquilable": 21.06, "const_proym2": 46.42, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 977.81, "pct_iva": 0.21}, {"ua": "2", "ref": "ROS", "refua": "ROS_0_2izda", "uso": "Local", "direccion": "Rosselló", "portal": "398", "piso": 0, "puerta": "2izda", "municipio": "Barcelona", "arrendatario": "Di Zhang", "nif": "Y1540712W", "telefono": "610884516", "mail": "help_sport@hotmail.com", "tipo_contrato": "Local", "f_inicio": "19/04/2021", "contracte": 750.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "19/04/2027", "preaviso_fin": "19/03/2027", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1500.0, "fianza_adicional": null, "fi_importe": 1500.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 40.71, "m2_alquilable": 40.71, "precio_m2_alquilable": 21.94, "const_proym2": 40.71, "registro_cee": "X5MMDQ1T7", "calif_cee": "F-F", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 893.4, "pct_iva": 0.21}, {"ua": "3", "ref": "ROS", "refua": "ROS_0_3", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 0, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Delia Antonia Gorski Lavié de Silveira", "nif": "46653935E", "telefono": "934355127", "mail": "silveiragorski@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "15/03/1976", "contracte": 56.24, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 36.06, "fianza_adicional": null, "fi_importe": 36.06, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 30.34, "m2_alquilable": 30.34, "precio_m2_alquilable": 6.13, "const_proym2": 30.34, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 185.88, "pct_iva": 0.0}, {"ua": "4", "ref": "ROS", "refua": "ROS_EN_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": "EN", "puerta": 1, "municipio": "Barcelona", "arrendatario": "Astte López, Margot", "nif": "X5515596N", "telefono": "636275402", "mail": "mjesus1950@hotmail.es", "tipo_contrato": "Vivienda", "f_inicio": "01/12/2011", "contracte": 350.0, "cs_contrato": 35.0, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 700.0, "fianza_adicional": null, "fi_importe": 700.0, "via_cobro": "Efectivo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "no", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 47.95, "m2_alquilable": 60.0, "precio_m2_alquilable": 8.26, "const_proym2": 47.95, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB 2875911001", "chb_caducidad": "28/11/2026", "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 495.38, "pct_iva": 0.0}, {"ua": "5", "ref": "ROS", "refua": "ROS_EN_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": "EN", "puerta": 2, "municipio": "Barcelona", "arrendatario": "Kabita Lamichhane", "nif": "Y2975547M", "telefono": "612295874", "mail": "pratikkabi22@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/05/2015", "contracte": 540.0, "cs_contrato": 40.0, "tipo_fin": "TR", "fecha_fin": "30/04/2027", "preaviso_fin": "30/12/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1080.0, "fianza_adicional": null, "fi_importe": 1080.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "no", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 65.01, "m2_alquilable": 65.01, "precio_m2_alquilable": 11.2, "const_proym2": 65.01, "registro_cee": "L6F9NDDGC", "calif_cee": "G-G", "fecha_fin_cee": "05/07/2023", "num_cedula": "CHB 2893805001", "chb_caducidad": "08/11/2020", "estado_actual": "mal estado", "subarriendo": "Candados", "bi": 727.99, "pct_iva": 0.0}, {"ua": "6", "ref": "ROS", "refua": "ROS_EN_3", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": "EN", "puerta": 3, "municipio": "Barcelona", "arrendatario": "Maria Aleida Hurtado", "nif": "Y1470877H", "telefono": "677616679", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/12/2015", "contracte": 610.0, "cs_contrato": 40.0, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1220.0, "fianza_adicional": null, "fi_importe": 1220.0, "via_cobro": "Efectivo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "no", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 63.38, "m2_alquilable": 63.38, "precio_m2_alquilable": 12.87, "const_proym2": 63.38, "registro_cee": "S34NDPJV2", "calif_cee": "E-E", "fecha_fin_cee": "06/11/2025", "num_cedula": "CHB 1362005001", "chb_caducidad": "15/06/2020", "estado_actual": "mal estado", "subarriendo": "Candados", "bi": 815.53, "pct_iva": 0.0}, {"ua": "7", "ref": "ROS", "refua": "ROS_EN_4", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": "EN", "puerta": 4, "municipio": "Barcelona", "arrendatario": "Claudio Silveira Silva", "nif": "197322", "telefono": "679901876", "mail": "silveiragorski@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/07/2000", "contracte": 198.33, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 396.67, "fianza_adicional": null, "fi_importe": 396.67, "via_cobro": "Recibo", "cl_repercusion": "Cáusula IBI", "cl_escalera": "no", "cl_luz_escalera": "no", "cl_tasas": "no", "cl_ibi": "si", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 47.95, "m2_alquilable": 60.0, "precio_m2_alquilable": 5.54, "const_proym2": 47.95, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB 0137399001", "chb_caducidad": "10/02/2009", "estado_actual": null, "subarriendo": null, "bi": 332.44, "pct_iva": 0.0}, {"ua": "8", "ref": "ROS", "refua": "ROS_PR_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": "PR", "puerta": 1, "municipio": "Barcelona", "arrendatario": "Juliana Almeida Cobo", "nif": "X7756323X", "telefono": "663333998", "mail": "jdealmeidacobo@icloud.com", "tipo_contrato": "Vivienda", "f_inicio": "01/10/2016", "contracte": 620.0, "cs_contrato": 40.0, "tipo_fin": "TR", "fecha_fin": "01/10/2026", "preaviso_fin": "01/06/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1240.0, "fianza_adicional": null, "fi_importe": 1240.0, "via_cobro": "Transfer.", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "no", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 62.6, "precio_m2_alquilable": 13.03, "const_proym2": 59.79, "registro_cee": "607Z35VZG", "calif_cee": "E-E", "fecha_fin_cee": "20/12/2024", "num_cedula": "CHB 07467414001", "chb_caducidad": "30/12/2029", "estado_actual": "Buen estado", "subarriendo": null, "bi": 815.79, "pct_iva": 0.0}, {"ua": "9", "ref": "ROS", "refua": "ROS_PR_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": "PR", "puerta": 2, "municipio": "Barcelona", "arrendatario": "Zahid Naseem Begum", "nif": "30366148F", "telefono": "632882791", "mail": "znaseem000@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/08/2023", "contracte": 1100.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/07/2030", "preaviso_fin": "31/03/2030", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2200.0, "fianza_adicional": null, "fi_importe": 2200.0, "via_cobro": "Recibo", "cl_repercusion": "Inluidos", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "si cláusula", "m2_adoptada": 57.57, "m2_alquilable": 58.0, "precio_m2_alquilable": 16.62, "const_proym2": 57.57, "registro_cee": "3GD9NL59X", "calif_cee": "G-G", "fecha_fin_cee": "30/04/2024", "num_cedula": "CHB 02662114001", "chb_caducidad": "22/05/2029", "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 963.94, "pct_iva": 0.0}, {"ua": "12", "ref": "ROS", "refua": "ROS_1_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 1, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Mathias Graf", "nif": "LGNFM2PCT", "telefono": "661 865 600", "mail": "mathias.kempten@web.de", "tipo_contrato": "Vivienda", "f_inicio": "01/09/2021", "contracte": 725.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/08/2029", "preaviso_fin": "30/04/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1500.0, "fianza_adicional": null, "fi_importe": 1500.0, "via_cobro": "Transfer.", "cl_repercusion": null, "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 62.6, "precio_m2_alquilable": 13.31, "const_proym2": 59.79, "registro_cee": "5Z1RBJTJ", "calif_cee": "E-F", "fecha_fin_cee": "05/07/2023", "num_cedula": "CHB 01904813001", "chb_caducidad": "14/05/2028", "estado_actual": null, "subarriendo": null, "bi": 833.5, "pct_iva": 0.0}, {"ua": "13", "ref": "ROS", "refua": "ROS_1_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 1, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Narciso Artasona Monfá", "nif": "36425478", "telefono": "670974084", "mail": "margabdf@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "03/11/1958", "contracte": 59.51, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 6.01, "fianza_adicional": null, "fi_importe": 6.01, "via_cobro": "Recibo", "cl_repercusion": "Contrato renta antigua", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "n/a", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 57.57, "m2_alquilable": 58.0, "precio_m2_alquilable": 3.36, "const_proym2": 57.57, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 194.61, "pct_iva": 0.0}, {"ua": "14", "ref": "ROS", "refua": "ROS_1_3", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 1, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Ana Sofia Soffe Calabozo y Bart Da Conciçao Maqrques Dos Santos", "nif": "pas XDD6696+ Y NR9F7DF92", "telefono": "0031639225867", "mail": "ana.soffe@yahoo.fr", "tipo_contrato": "Vivienda", "f_inicio": "01/02/2023", "contracte": 1250.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "01/02/2030", "preaviso_fin": "01/10/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2500.0, "fianza_adicional": null, "fi_importe": 2500.0, "via_cobro": "Transfer.", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "No incluidos", "cl_caldera": "si", "cl_seguro": "si", "m2_adoptada": 56.14, "m2_alquilable": 58.0, "precio_m2_alquilable": 24.27, "const_proym2": 56.14, "registro_cee": "YZ8CRLX1S", "calif_cee": "G-F", "fecha_fin_cee": "07/07/2027", "num_cedula": "CHB04072722001", "chb_caducidad": "18/07/2037", "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 1407.54, "pct_iva": 0.0}, {"ua": "15", "ref": "ROS", "refua": "ROS_1_4", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 1, "puerta": 4, "municipio": "Barcelona", "arrendatario": "Daniel Mercerreys Nebreda", "nif": "38374019Z", "telefono": "607577377", "mail": "IAIAMERCE@HOTMAIL.COM", "tipo_contrato": "Vivienda", "f_inicio": "01/10/1973", "contracte": 92.75, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 24.04, "fianza_adicional": null, "fi_importe": 24.04, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "NO", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 59.79, "precio_m2_alquilable": 4.18, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": "Buen estado", "subarriendo": null, "bi": 249.75, "pct_iva": 0.0}, {"ua": "16", "ref": "ROS", "refua": "ROS_2_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 2, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Carlos López Garcia", "nif": "36469604E", "telefono": "634977335", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/03/1976", "contracte": 96.4, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 36.06, "fianza_adicional": null, "fi_importe": 36.06, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 59.79, "precio_m2_alquilable": 5.78, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": "Deficiencias obras inquilino.", "subarriendo": null, "bi": 345.79, "pct_iva": 0.0}, {"ua": "17", "ref": "ROS", "refua": "ROS_2_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 2, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Javier Bonet Garcia", "nif": "46122555B", "telefono": "635953232", "mail": "xavi.bonet@outlook.es", "tipo_contrato": "Vivienda", "f_inicio": "01/04/2019", "contracte": 642.0, "cs_contrato": null, "tipo_fin": "FIN V", "fecha_fin": "31/03/2029", "preaviso_fin": "30/11/2028", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 642.0, "fianza_adicional": 642.0, "fi_importe": 1284.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 57.57, "m2_alquilable": 58.0, "precio_m2_alquilable": 13.75, "const_proym2": 57.57, "registro_cee": "Z1ZRY0FGJ", "calif_cee": "E-E", "fecha_fin_cee": "06/03/2029", "num_cedula": "CHB01215319001", "chb_caducidad": "18/03/2034", "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 797.46, "pct_iva": 0.0}, {"ua": "18", "ref": "ROS", "refua": "ROS_2_3", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 2, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Antoine Alexis Gardes", "nif": "Y4279155L", "telefono": "667489847", "mail": "gardes.antoine1@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/10/2018", "contracte": 770.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/09/2026", "preaviso_fin": "30/05/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1540.0, "fianza_adicional": null, "fi_importe": 1540.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 56.14, "m2_alquilable": 58.0, "precio_m2_alquilable": 16.89, "const_proym2": 56.14, "registro_cee": "5NLMVLXW6", "calif_cee": "E-E", "fecha_fin_cee": "15/09/2024", "num_cedula": "CHB 05326514001", "chb_caducidad": "06/10/2029", "estado_actual": "Buen estado", "subarriendo": "alquila habitaciones estudiantes", "bi": 979.52, "pct_iva": 0.0}, {"ua": "20", "ref": "ROS", "refua": "ROS_3_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 3, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Maria Dolores Diaz Gonzalez", "nif": "38501740G", "telefono": "610709273", "mail": "margaritasflors@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/05/1996", "contracte": 300.51, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/04/2027", "preaviso_fin": "30/12/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 601.01, "fianza_adicional": null, "fi_importe": 601.01, "via_cobro": "Recibo", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 59.79, "precio_m2_alquilable": 9.53, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "911008019025086", "chb_caducidad": "04/11/2001", "estado_actual": "Deficiencias en el suelo por obras del 2_1", "subarriendo": null, "bi": 569.59, "pct_iva": 0.0}, {"ua": "21", "ref": "ROS", "refua": "ROS_3_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 3, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Marina Farguell Sales", "nif": "37243159H", "telefono": "933475260", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/11/1981", "contracte": 126.21, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 78.13, "fianza_adicional": null, "fi_importe": 78.13, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 57.57, "m2_alquilable": 58.0, "precio_m2_alquilable": 5.35, "const_proym2": 57.57, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 310.48, "pct_iva": 0.0}, {"ua": "23", "ref": "ROS", "refua": "ROS_3_4", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 3, "puerta": 4, "municipio": "Barcelona", "arrendatario": "Esther Gregorio Riba", "nif": "37665385X", "telefono": "658479739", "mail": "esthergregorio6@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/01/1940", "contracte": 27.05, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": null, "fianza_adicional": null, "fi_importe": 0.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 59.79, "m2_alquilable": 59.79, "precio_m2_alquilable": 2.46, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": "Dejado", "subarriendo": null, "bi": 146.79, "pct_iva": 0.0}, {"ua": "24", "ref": "ROS", "refua": "ROS_4_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 4, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Lelia Fabiola Mondillo", "nif": "X4567609Q", "telefono": "669715889", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/07/2004", "contracte": 450.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 900.0, "fianza_adicional": null, "fi_importe": 900.0, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 62.0, "precio_m2_alquilable": 11.43, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB1336904001", "chb_caducidad": "12/07/2019", "estado_actual": null, "subarriendo": null, "bi": 708.87, "pct_iva": 0.0}, {"ua": "25", "ref": "ROS", "refua": "ROS_4_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 4, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Barbara Luisa Guimeraes Alves de Sousa", "nif": "Y3804586D", "telefono": "643919052", "mail": "barbara.caius@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/04/2015", "contracte": 500.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/03/2027", "preaviso_fin": "30/11/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1000.0, "fianza_adicional": null, "fi_importe": 1000.0, "via_cobro": "Transfer.", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 57.57, "m2_alquilable": 58.0, "precio_m2_alquilable": 11.69, "const_proym2": 57.57, "registro_cee": "F4LWMWY8P", "calif_cee": "G-G", "fecha_fin_cee": "05/07/2023", "num_cedula": "CHB 02898012001", "chb_caducidad": "21/12/2027", "estado_actual": null, "subarriendo": null, "bi": 678.0, "pct_iva": 0.0}, {"ua": "26", "ref": "ROS", "refua": "ROS_4_3", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 4, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Eduardo Bertolin Muñoz", "nif": "47624636P", "telefono": "655187859", "mail": "marbermun@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/11/2000", "contracte": 300.51, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/10/2026", "preaviso_fin": "30/06/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 601.01, "fianza_adicional": null, "fi_importe": 601.01, "via_cobro": "Recibo", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 56.14, "m2_alquilable": 58.0, "precio_m2_alquilable": 9.82, "const_proym2": 56.14, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB 2026300001", "chb_caducidad": "31/10/2010", "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 569.59, "pct_iva": 0.0}, {"ua": "27", "ref": "ROS", "refua": "ROS_4_4", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 4, "puerta": 4, "municipio": "Barcelona", "arrendatario": "Isabel Tormo Pelegrin", "nif": "38071929Y", "telefono": "695534713", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/07/2014", "contracte": 520.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1040.0, "fianza_adicional": null, "fi_importe": 1040.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 59.79, "precio_m2_alquilable": 11.76, "const_proym2": 59.79, "registro_cee": "JBJ7FHTZ8", "calif_cee": "E-E", "fecha_fin_cee": "02/03/2024", "num_cedula": "CHB 02373914001", "chb_caducidad": "25/04/2029", "estado_actual": "Buen estado", "subarriendo": "vive el hijo", "bi": 703.01, "pct_iva": 0.0}, {"ua": "28", "ref": "ROS", "refua": "ROS_5_1", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 5, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Maria Jesús Ruiz Gallego", "nif": "43686218H", "telefono": "547584201", "mail": "masusrg@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/06/2000", "contracte": 240.4, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "01/06/2026", "preaviso_fin": "01/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 480.8, "fianza_adicional": null, "fi_importe": 480.8, "via_cobro": "Recibo", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 59.79, "precio_m2_alquilable": 7.8, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB 689000001", "chb_caducidad": "13/04/2010", "estado_actual": "Buen estado", "subarriendo": null, "bi": 466.39, "pct_iva": 0.0}, {"ua": "29", "ref": "ROS", "refua": "ROS_5_2", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 5, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Maria Laura Bonello", "nif": "X9954655W", "telefono": "653749486", "mail": "laurabonello@outlook.es", "tipo_contrato": "Vivienda", "f_inicio": "01/03/2014", "contracte": 460.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "28/02/2027", "preaviso_fin": "28/10/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 920.0, "fianza_adicional": null, "fi_importe": 920.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 57.57, "m2_alquilable": 58.0, "precio_m2_alquilable": 10.91, "const_proym2": 57.57, "registro_cee": "GTG21KNPP", "calif_cee": "G-G", "fecha_fin_cee": "27/03/2025", "num_cedula": "CHB 3136710001", "chb_caducidad": "05/10/2025", "estado_actual": null, "subarriendo": null, "bi": 627.99, "pct_iva": 0.0}, {"ua": "30", "ref": "ROS", "refua": "ROS_5_3", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 5, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Maria Sol Daniela Noya y Fernanda Mosquera Rozo", "nif": "60881159K Y 46105073D", "telefono": "664057127", "mail": "sol.noya89@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "20/02/2023", "contracte": 1200.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "20/02/2030", "preaviso_fin": "20/10/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2400.0, "fianza_adicional": null, "fi_importe": 2400.0, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "No incluidos", "cl_caldera": "si", "cl_seguro": "si", "m2_adoptada": 56.14, "m2_alquilable": 58.0, "precio_m2_alquilable": 23.33, "const_proym2": 56.14, "registro_cee": "7VP6TZ3YR", "calif_cee": "G-G", "fecha_fin_cee": "23/10/2027", "num_cedula": "CHB 05561717001", "chb_caducidad": "09/11/2032", "estado_actual": "Buen estado", "subarriendo": "Según vecino: turístico alquiler", "bi": 1353.2, "pct_iva": 0.0}, {"ua": "31", "ref": "ROS", "refua": "ROS_5_4", "uso": "Vivienda", "direccion": "Rosselló", "portal": "398", "piso": 5, "puerta": 4, "municipio": "Barcelona", "arrendatario": "Ramon Codina Fossas", "nif": "37264673G", "telefono": "620373738", "mail": "ramon0610@yahoo.com", "tipo_contrato": "Vivienda", "f_inicio": "01/02/2014", "contracte": 480.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/01/2027", "preaviso_fin": "30/09/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 960.0, "fianza_adicional": null, "fi_importe": 960.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.79, "m2_alquilable": 62.0, "precio_m2_alquilable": 10.53, "const_proym2": 59.79, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB 1336804001", "chb_caducidad": "29/06/2019", "estado_actual": "Buen estado, algo dejado", "subarriendo": null, "bi": 652.98, "pct_iva": 0.0}, {"ua": "32", "ref": "BON", "refua": "BON_0_1_2", "uso": "Local", "direccion": "Bonavista", "portal": "26", "piso": 0, "puerta": "1_2", "municipio": "Barcelona", "arrendatario": "Maria Jose Torres Carvajal", "nif": "08816778G", "telefono": "935135818", "mail": "info@malahierbafashion.com", "tipo_contrato": "Local", "f_inicio": "01/03/2024", "contracte": 1400.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "28/02/2029", "preaviso_fin": "28/01/2029", "tipo_revision": "Contrato", "fecha_revision_renta": "01/03/2026", "fi_incasol": 2800.0, "fianza_adicional": 2800.0, "fi_importe": 5600.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 116.93, "m2_alquilable": 154.0, "precio_m2_alquilable": 9.09, "const_proym2": 116.93, "registro_cee": "7Z8N1RPL4", "calif_cee": "C-C", "fecha_fin_cee": "28/02/2034", "num_cedula": "0", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1400.0, "pct_iva": 0.21}, {"ua": "36", "ref": "BON", "refua": "BON_PR_3", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": "PR", "puerta": 3, "municipio": "Barcelona", "arrendatario": "Javier Vilarrubia Llopis/Franziska balzer", "nif": "40361944A/Y6840695A", "telefono": "616459034", "mail": "vilarrubiasjavier@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "15/02/2023", "contracte": 1300.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/01/2030", "preaviso_fin": "30/09/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2600.0, "fianza_adicional": null, "fi_importe": 2600.0, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "No incluidos", "cl_caldera": "si", "cl_seguro": "si", "m2_adoptada": 111.45, "m2_alquilable": 111.45, "precio_m2_alquilable": 12.68, "const_proym2": 111.45, "registro_cee": "G3ZRJNHRN", "calif_cee": "E-E", "fecha_fin_cee": "11/04/2026", "num_cedula": "CHB00461312001", "chb_caducidad": "15/05/2027", "estado_actual": null, "subarriendo": null, "bi": 1412.97, "pct_iva": 0.0}, {"ua": "38", "ref": "BON", "refua": "BON_1_1", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 1, "puerta": 1, "municipio": "Barcelona", "arrendatario": "INTERNATIONAL AMERICAN SCHOOL EDUCATION, SL", "nif": "B10877934", "telefono": "657128649", "mail": "admin@barcelonahighschool.com", "tipo_contrato": "Vivienda", "f_inicio": "01/12/2022", "contracte": 1000.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/12/2029", "preaviso_fin": "31/08/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2000.0, "fianza_adicional": null, "fi_importe": 2000.0, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "n/a", "cl_agua": "no", "cl_electrodomesticos": "No incluidos", "cl_caldera": "SI", "cl_seguro": "SI", "m2_adoptada": 63.41, "m2_alquilable": 67.0, "precio_m2_alquilable": 16.28, "const_proym2": 63.41, "registro_cee": "F3Z77DBD1", "calif_cee": "G-F", "fecha_fin_cee": "05/12/2027", "num_cedula": "CHB04447621001", "chb_caducidad": "29/07/2036", "estado_actual": null, "subarriendo": null, "bi": 1090.61, "pct_iva": 0.21}, {"ua": "39", "ref": "BON", "refua": "BON_1_2", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 1, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Maria Teresa Rey del Hoyo", "nif": "1370054J", "telefono": "687038547", "mail": "sandradelhoyo@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "15/09/1979", "contracte": 39.07, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 78.13, "fianza_adicional": null, "fi_importe": 78.13, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 70.22, "m2_alquilable": 80.0, "precio_m2_alquilable": 2.11, "const_proym2": 70.22, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB06716124001", "chb_caducidad": "27/11/2039", "estado_actual": null, "subarriendo": null, "bi": 168.9, "pct_iva": 0.0}, {"ua": "40", "ref": "BON", "refua": "BON_1_3", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 1, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Miguela Campos Brun", "nif": "37990114W", "telefono": "932183740", "mail": "alcazarr80@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/02/1981", "contracte": 109.25, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 48.08, "fianza_adicional": null, "fi_importe": 48.08, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 111.45, "m2_alquilable": 111.45, "precio_m2_alquilable": 2.0, "const_proym2": 111.45, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB07304024001", "chb_caducidad": "19/12/2039", "estado_actual": null, "subarriendo": null, "bi": 222.55, "pct_iva": 0.0}, {"ua": "42", "ref": "BON", "refua": "BON_2_1", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 2, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Armonia Rodriguez Rodrigues", "nif": "9701791T", "telefono": "932372814", "mail": "armoniarodriguez1@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/12/1981", "contracte": 114.49, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 54.09, "fianza_adicional": null, "fi_importe": 54.09, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 63.41, "m2_alquilable": 67.0, "precio_m2_alquilable": 4.35, "const_proym2": 63.41, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB07245524001", "chb_caducidad": "18/12/2039", "estado_actual": null, "subarriendo": null, "bi": 291.3, "pct_iva": 0.0}, {"ua": "43", "ref": "BON", "refua": "BON_2_2", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 2, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Sandra Margarida Moura da Cruz y Juan March Berlinches", "nif": "23894445K", "telefono": "661012834", "mail": "smmoura@eoibd.cat", "tipo_contrato": "Vivienda", "f_inicio": "01/02/2024", "contracte": 1250.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/01/2031", "preaviso_fin": "30/09/2030", "tipo_revision": "IPC", "fecha_revision_renta": "01/02/2026", "fi_incasol": 1250.0, "fianza_adicional": 2500.0, "fi_importe": 3750.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "si", "cl_agua": "si", "cl_electrodomesticos": "Arrendatario", "cl_caldera": "SI", "cl_seguro": "SI", "m2_adoptada": 70.22, "m2_alquilable": 80.0, "precio_m2_alquilable": 15.0, "const_proym2": 70.22, "registro_cee": "4H7VCCF0T", "calif_cee": "F-G", "fecha_fin_cee": "09/01/2025", "num_cedula": "CHB00062815001", "chb_caducidad": "16/01/2030", "estado_actual": null, "subarriendo": null, "bi": 1200.34, "pct_iva": 0.0}, {"ua": "44", "ref": "BON", "refua": "BON_2_3", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 2, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Andreu Agustín Andrés", "nif": "77282186R", "telefono": "932179360", "mail": "andreuagustin@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/09/2011", "contracte": 650.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/08/2031", "preaviso_fin": "30/04/2031", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1300.0, "fianza_adicional": null, "fi_importe": 1300.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 111.45, "m2_alquilable": 111.45, "precio_m2_alquilable": 7.53, "const_proym2": 111.45, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB2815211001", "chb_caducidad": "22/02/2027", "estado_actual": null, "subarriendo": null, "bi": 839.46, "pct_iva": 0.0}, {"ua": "45", "ref": "BON", "refua": "BON_2_4", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 2, "puerta": 4, "municipio": "Barcelona", "arrendatario": "Chloe Emma Charlotte Lagrue", "nif": "Y89829144Q", "telefono": "654685121", "mail": "lagruech@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "16/05/2023", "contracte": 1200.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "15/05/2030", "preaviso_fin": "15/01/2030", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2400.0, "fianza_adicional": null, "fi_importe": 2400.0, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "n/a", "cl_agua": "no", "cl_electrodomesticos": "No incluidos", "cl_caldera": "SI", "cl_seguro": "SI", "m2_adoptada": 73.96, "m2_alquilable": 73.96, "precio_m2_alquilable": 17.51, "const_proym2": 73.96, "registro_cee": "6L4WFLPK", "calif_cee": "E-E", "fecha_fin_cee": "31/05/2028", "num_cedula": "CHB03016518001", "chb_caducidad": "28/06/2033", "estado_actual": null, "subarriendo": null, "bi": 1294.76, "pct_iva": 0.0}, {"ua": "48", "ref": "BON", "refua": "BON_3_2B", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 3, "puerta": "2B", "municipio": "Barcelona", "arrendatario": "Francisco Javier Gimeno-Bayon Forteza", "nif": "46403384", "telefono": "646415234", "mail": "meno2020@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/10/2009", "contracte": 380.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/09/2026", "preaviso_fin": "30/05/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 760.0, "fianza_adicional": null, "fi_importe": 760.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 34.25, "m2_alquilable": 40.0, "precio_m2_alquilable": 12.62, "const_proym2": 34.25, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB06338224001", "chb_caducidad": "21/11/2039", "estado_actual": null, "subarriendo": null, "bi": 504.76, "pct_iva": 0.0}, {"ua": "49", "ref": "BON", "refua": "BON_3_3", "uso": "Vivienda", "direccion": "Bonavista", "portal": "26", "piso": 3, "puerta": 3, "municipio": "Barcelona", "arrendatario": "Magdalena Ouro Cajide", "nif": "33761016", "telefono": "932377746", "mail": "meno2020@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/03/1972", "contracte": 97.59, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 21.63, "fianza_adicional": null, "fi_importe": 21.63, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "NO", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "NO", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 111.32, "m2_alquilable": 111.32, "precio_m2_alquilable": 2.36, "const_proym2": 111.32, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB06338924001", "chb_caducidad": "15/11/2039", "estado_actual": null, "subarriendo": null, "bi": 262.74, "pct_iva": 0.0}, {"ua": "52", "ref": "SAN", "refua": "SAN_PB_1", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": "PB", "puerta": 1, "municipio": "Barcelona", "arrendatario": "Cervesera Artesana SLU", "nif": "B61705661", "telefono": "693864840", "mail": "contable@lacervesera.net", "tipo_contrato": "Local", "f_inicio": "25/11/2022", "contracte": 600.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/12/2026", "preaviso_fin": "30/11/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1200.0, "fianza_adicional": 1200.0, "fi_importe": 2400.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 49.3, "m2_alquilable": 49.3, "precio_m2_alquilable": 14.38, "const_proym2": 49.3, "registro_cee": "X5CL617YD", "calif_cee": "C", "fecha_fin_cee": "21/11/2032", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 708.89, "pct_iva": 0.21}, {"ua": "53", "ref": "SAN", "refua": "SAN_PB_2", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": "PB", "puerta": 2, "municipio": "Barcelona", "arrendatario": "Un Taller SCP", "nif": "J-65604134", "telefono": "93 415 74 21", "mail": "marife@untaller.es", "tipo_contrato": "Local", "f_inicio": "01/10/2011", "contracte": 780.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/09/2026", "preaviso_fin": "30/08/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1560.0, "fianza_adicional": null, "fi_importe": 1560.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 157.3, "m2_alquilable": 157.3, "precio_m2_alquilable": 6.8, "const_proym2": 157.3, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1069.29, "pct_iva": 0.21}, {"ua": "54", "ref": "SAN", "refua": "SAN_PB_3", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": "PB", "puerta": 3, "municipio": "Barcelona", "arrendatario": "Prosound Technica, SL", "nif": "B56252497", "telefono": "691331048", "mail": "emarti@prosound.es", "tipo_contrato": "Local", "f_inicio": "01/10/2025", "contracte": 500.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/12/2028", "preaviso_fin": "6 meses", "tipo_revision": "Contrato", "fecha_revision_renta": "01/01/2026", "fi_incasol": 500.0, "fianza_adicional": null, "fi_importe": 500.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 78.8, "m2_alquilable": 78.8, "precio_m2_alquilable": 5.2, "const_proym2": 78.8, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 410.0, "pct_iva": 0.21}, {"ua": "61", "ref": "SAN", "refua": "SAN_1_B", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 1, "puerta": "B", "municipio": "Barcelona", "arrendatario": "Estigma Edicions SL", "nif": "B-66015462", "telefono": "667056512", "mail": "info@sic97.com", "tipo_contrato": "Local", "f_inicio": "01/05/2013", "contracte": 339.06, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/09/2026", "preaviso_fin": "30/08/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 805.0, "fianza_adicional": null, "fi_importe": 805.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 32.6, "m2_alquilable": 32.6, "precio_m2_alquilable": 14.92, "const_proym2": 32.6, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 486.26, "pct_iva": 0.21}, {"ua": "63", "ref": "SAN", "refua": "SAN_1_D", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 1, "puerta": "D", "municipio": "Barcelona", "arrendatario": "Vanesa Almar Llobet", "nif": "36516538J", "telefono": "625069564", "mail": "vanessa@mis-mas.com", "tipo_contrato": "Local", "f_inicio": "15/05/2024", "contracte": 720.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/05/2029", "preaviso_fin": "6 meses", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1440.0, "fianza_adicional": null, "fi_importe": 1440.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 57.35, "m2_alquilable": 57.35, "precio_m2_alquilable": 13.71, "const_proym2": 57.35, "registro_cee": "T25X4PPKZ", "calif_cee": "F", "fecha_fin_cee": "21/05/234", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 786.19, "pct_iva": 0.21}, {"ua": "65", "ref": "SAN", "refua": "SAN_1_F", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 1, "puerta": "F", "municipio": "Barcelona", "arrendatario": "BO1 Estudi d'Arquitectes, SLP", "nif": "B-65152274", "telefono": "654905270", "mail": "sclaudy@b01arquitectes.com", "tipo_contrato": "Local", "f_inicio": "01/06/2024", "contracte": 1120.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/05/2029", "preaviso_fin": "30/04/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2027", "fi_incasol": 2240.0, "fianza_adicional": null, "fi_importe": 2240.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 82.8, "m2_alquilable": 82.8, "precio_m2_alquilable": 13.04, "const_proym2": 82.8, "registro_cee": "V61LS1CRK", "calif_cee": "D", "fecha_fin_cee": "23/05/2034", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1080.0, "pct_iva": 0.21}, {"ua": "66", "ref": "SAN", "refua": "SAN_2_A", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 2, "puerta": "A", "municipio": "Barcelona", "arrendatario": "Amalgama Studio SL", "nif": "B-67138487", "telefono": "679051987", "mail": "arnau@amalgamastudio.com", "tipo_contrato": "Local", "f_inicio": "01/01/2026", "contracte": 1800.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/12/2033", "preaviso_fin": "12 meses", "tipo_revision": "Contrato", "fecha_revision_renta": "01/01/2027", "fi_incasol": 3600.0, "fianza_adicional": null, "fi_importe": 3600.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 201.7, "m2_alquilable": 201.7, "precio_m2_alquilable": 9.1, "const_proym2": 201.7, "registro_cee": "FGYRTQ2Z3", "calif_cee": "D", "fecha_fin_cee": "26/10/2024", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1835.0, "pct_iva": 0.21}, {"ua": "68", "ref": "SAN", "refua": "SAN_2_C", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 2, "puerta": "C", "municipio": "Barcelona", "arrendatario": "Estudio Bendita Gloria SL", "nif": "B-64209547", "telefono": "932 379 729", "mail": "press@benditagloria.com", "tipo_contrato": "Local", "f_inicio": "01/07/2025", "contracte": 725.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/06/2030", "preaviso_fin": "1 meses", "tipo_revision": "IPC", "fecha_revision_renta": "01/07/2026", "fi_incasol": 1450.0, "fianza_adicional": null, "fi_importe": 1450.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 50.4, "m2_alquilable": 50.4, "precio_m2_alquilable": 14.98, "const_proym2": 50.4, "registro_cee": "03417G1TS", "calif_cee": "C", "fecha_fin_cee": "04/06/2035", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 755.0, "pct_iva": 0.21}, {"ua": "69", "ref": "SAN", "refua": "SAN_2_D", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 2, "puerta": "D", "municipio": "Barcelona", "arrendatario": "Vent de tramuntana i mestral, S.L.", "nif": "B-66229568", "telefono": "619 64 40 60", "mail": "ibatllo@gmail.com", "tipo_contrato": "Local", "f_inicio": "15/03/2024", "contracte": 1070.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/03/2029", "preaviso_fin": "28/02/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2140.0, "fianza_adicional": 2140.0, "fi_importe": 4280.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 82.8, "m2_alquilable": 82.8, "precio_m2_alquilable": 13.96, "const_proym2": 82.8, "registro_cee": "3PS46JLLK", "calif_cee": "D", "fecha_fin_cee": "19/12/2025", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1155.67, "pct_iva": 0.21}, {"ua": "70", "ref": "SAN", "refua": "SAN_3_A", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 3, "puerta": "A", "municipio": "Barcelona", "arrendatario": "Leonardo Jesús Enrique Garcia Mendez", "nif": "43598556D", "telefono": "657775613", "mail": "leonardo@leogarciamendez.com", "tipo_contrato": "Local", "f_inicio": "01/07/2025", "contracte": 725.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/06/2030", "preaviso_fin": "3 meses", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2027", "fi_incasol": null, "fianza_adicional": 1450.0, "fi_importe": 1450.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 50.4, "m2_alquilable": 50.4, "precio_m2_alquilable": 14.15, "const_proym2": 50.4, "registro_cee": "WQ3J6FBY1", "calif_cee": "D", "fecha_fin_cee": "06/06/2027", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 713.34, "pct_iva": 0.21}, {"ua": "72", "ref": "SAN", "refua": "SAN_3_C", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 3, "puerta": "C", "municipio": "Barcelona", "arrendatario": "Camille Rose Claude Vannier", "nif": "X6017073C", "telefono": "722228574", "mail": "cam.vannier@gmail.com", "tipo_contrato": "Local", "f_inicio": "01/06/2024", "contracte": 800.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/05/2029", "preaviso_fin": "30/04/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1600.0, "fianza_adicional": null, "fi_importe": 1600.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 60.15, "m2_alquilable": 60.15, "precio_m2_alquilable": 14.2, "const_proym2": 60.15, "registro_cee": "ZJ42SMWTR", "calif_cee": "C", "fecha_fin_cee": "02/06/2028", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 854.07, "pct_iva": 0.21}, {"ua": "73", "ref": "SAN", "refua": "SAN_3_D", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 3, "puerta": "D", "municipio": "Barcelona", "arrendatario": "Caterina Barjau Dachs", "nif": "46404339E", "telefono": "666500963", "mail": "info@caterinabarjau.com", "tipo_contrato": "Local", "f_inicio": "01/10/2017", "contracte": 1045.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/09/2027", "preaviso_fin": "30/08/2027", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2090.0, "fianza_adicional": null, "fi_importe": 2090.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 201.3, "m2_alquilable": 201.3, "precio_m2_alquilable": 6.77, "const_proym2": 201.3, "registro_cee": "XMD2X5YJH", "calif_cee": "E", "fecha_fin_cee": "08/09/2027", "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1362.35, "pct_iva": 0.21}, {"ua": "74", "ref": "SAN", "refua": "SAN_3_E", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 3, "puerta": "E", "municipio": "Barcelona", "arrendatario": "David Borrull Carreras y Isabel Graña Muñoz", "nif": "47649298Z y 47759143B", "telefono": "606624519", "mail": "david@maliboo.tv", "tipo_contrato": "Local", "f_inicio": "01/02/2025", "contracte": 1028.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/01/2029", "preaviso_fin": "2 meses", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 2056.0, "fianza_adicional": null, "fi_importe": 2056.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 82.8, "m2_alquilable": 82.8, "precio_m2_alquilable": 13.15, "const_proym2": 82.8, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "-", "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 1088.68, "pct_iva": 0.21}, {"ua": "76", "ref": "SAN", "refua": "SAN_4_2", "uso": "Local", "direccion": "San Agustín", "portal": "3-5", "piso": 4, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Marta Prat de la Riba Ayma", "nif": "46142548V", "telefono": "619644560", "mail": "mpratdelariba@hotmail.com", "tipo_contrato": "Local", "f_inicio": "01/10/2024", "contracte": 1600.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/09/2029", "preaviso_fin": "30/08/2029", "tipo_revision": "Contrato", "fecha_revision_renta": "01/10/2026", "fi_incasol": 3800.0, "fianza_adicional": null, "fi_importe": 3800.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 90.1, "m2_alquilable": 90.1, "precio_m2_alquilable": 18.09, "const_proym2": 90.1, "registro_cee": "NK6DDWL4R", "calif_cee": "F", "fecha_fin_cee": "02/08/2024", "num_cedula": "-", "chb_caducidad": null, "estado_actual": "Buen Estado", "subarriendo": "NO", "bi": 1630.0, "pct_iva": 0.21}, {"ua": "79", "ref": "SEP", "refua": "SEP_0_1", "uso": "Local", "direccion": "Sepúlveda", "portal": "17", "piso": 0, "puerta": "1", "municipio": "Barcelona", "arrendatario": "LiFang Qiu", "nif": "X3083445L", "telefono": "688822552", "mail": "luanhairong64@gmail.com", "tipo_contrato": "Local", "f_inicio": "01/07/2024", "contracte": 725.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/06/2029", "preaviso_fin": "30/05/2029", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1450.0, "fianza_adicional": 1450.0, "fi_importe": 2900.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 55.0, "m2_alquilable": 55.0, "precio_m2_alquilable": 14.31, "const_proym2": 55.0, "registro_cee": "TBBF1CRLL", "calif_cee": "E-E", "fecha_fin_cee": "31/01/2026", "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 787.19, "pct_iva": 0.21}, {"ua": "81", "ref": "SEP", "refua": "SEP_PR_1", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": "PR", "puerta": 1, "municipio": "Barcelona", "arrendatario": "Flora Fano Orizano", "nif": "X2981974R", "telefono": "680728795", "mail": "fanoorizanoflora@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/12/2004", "contracte": 410.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 820.0, "fianza_adicional": null, "fi_importe": 820.0, "via_cobro": "Transfer.", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": "no", "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 11.69, "const_proym2": 59.48, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB2805404001", "chb_caducidad": "20/12/2019", "estado_actual": null, "subarriendo": null, "bi": 695.32, "pct_iva": 0.0}, {"ua": "82", "ref": "SEP", "refua": "SEP_PR_2", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": "PR", "puerta": 2, "municipio": "Barcelona", "arrendatario": "Monica Norma Zumba Saquipai", "nif": "23869561T", "telefono": "688358983", "mail": "donbosco.pzs@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/07/2011", "contracte": 590.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1180.0, "fianza_adicional": null, "fi_importe": 1180.0, "via_cobro": "Transfer.", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "no", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 12.47, "const_proym2": 59.48, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB1255011001", "chb_caducidad": "09/05/2026", "estado_actual": null, "subarriendo": "Según Juan - Realquilan habitaciones hace tiempo", "bi": 741.98, "pct_iva": 0.0}, {"ua": "83", "ref": "SEP", "refua": "SEP_1_1", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": 1, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Juan Tomillero Durán", "nif": "37310769P", "telefono": "667643384", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/03/1984", "contracte": 121.95, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 156.26, "fianza_adicional": null, "fi_importe": 156.26, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "Aumentos", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 5.2, "const_proym2": 59.48, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 309.18, "pct_iva": 0.0}, {"ua": "84", "ref": "SEP", "refua": "SEP_1_2", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": 1, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Luis Aurelio Salas Padilla", "nif": "47868792L", "telefono": "608489970", "mail": "luissp4000@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/04/2009", "contracte": 550.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/03/2027", "preaviso_fin": "30/11/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1100.0, "fianza_adicional": null, "fi_importe": 1100.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": "no", "cl_tasas": null, "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 12.38, "const_proym2": 59.48, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB0957809001", "chb_caducidad": "07/04/2024", "estado_actual": null, "subarriendo": null, "bi": 736.39, "pct_iva": 0.0}, {"ua": "85", "ref": "SEP", "refua": "SEP_2_1", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": 2, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Pilar Puig Sanglas", "nif": "37693949P", "telefono": "631401019", "mail": "ppscleo@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/12/2018", "contracte": 660.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1320.0, "fianza_adicional": null, "fi_importe": 1320.0, "via_cobro": "Efectivo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 14.02, "const_proym2": 59.48, "registro_cee": "6VD38M53N", "calif_cee": "E-F", "fecha_fin_cee": "28/11/2023", "num_cedula": "CHB06420713001", "chb_caducidad": "17/12/2028", "estado_actual": null, "subarriendo": null, "bi": 834.15, "pct_iva": 0.0}, {"ua": "86", "ref": "SEP", "refua": "SEP_2_2", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": 2, "puerta": 2, "municipio": "Barcelona", "arrendatario": "Hassan Hamza", "nif": "X5946912D", "telefono": "640266684", "mail": "raja.hamza800@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/04/2022", "contracte": 725.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/03/2029", "preaviso_fin": "30/11/2028", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1450.0, "fianza_adicional": null, "fi_importe": 1450.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": "si", "cl_tasas": null, "cl_ibi": "si", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "si", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 14.01, "const_proym2": 59.48, "registro_cee": "MBQMGY9GD", "calif_cee": "E-F", "fecha_fin_cee": "28/11/2023", "num_cedula": "CHB06421913001", "chb_caducidad": "17/12/2028", "estado_actual": null, "subarriendo": null, "bi": 833.5, "pct_iva": 0.0}, {"ua": "87", "ref": "SEP", "refua": "SEP_3_1", "uso": "Vivienda", "direccion": "Sepúlveda", "portal": "17", "piso": 3, "puerta": 1, "municipio": "Barcelona", "arrendatario": "Mauricio Andres Vargas Tierradentro / Angela Rocio Sanchez Conde", "nif": "Y6887016W / Y6887014T", "telefono": "632759454", "mail": "angela.sanchez.conde@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "13/12/2021", "contracte": 700.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "13/12/2028", "preaviso_fin": "13/08/2028", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1400.0, "fianza_adicional": null, "fi_importe": 1400.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.48, "m2_alquilable": 59.48, "precio_m2_alquilable": 13.71, "const_proym2": 59.48, "registro_cee": "Q4MSBK53C", "calif_cee": "E-F", "fecha_fin_cee": "23/09/2025", "num_cedula": "CHB04942915001", "chb_caducidad": "16/12/2030", "estado_actual": null, "subarriendo": null, "bi": 815.72, "pct_iva": 0.0}, {"ua": "94", "ref": "RC3", "refua": "RC3_0_2", "uso": "Local", "direccion": "Rafael Campalans", "portal": "3", "piso": 0, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Sandra Iserte Serrano", "nif": "B56460025", "telefono": "616698527", "mail": "lasandramoda@gmail.com", "tipo_contrato": "Local", "f_inicio": "20/09/2023", "contracte": 700.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "30/09/2030", "preaviso_fin": "30/08/2030", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1400.0, "fianza_adicional": 3400.0, "fi_importe": 4800.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": "SI", "cl_luz_escalera": "SI", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "SI", "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 78.0, "m2_alquilable": 78.0, "precio_m2_alquilable": 9.6, "const_proym2": 59.63, "registro_cee": "60W5T2XCC", "calif_cee": "C-C", "fecha_fin_cee": "18/03/2033", "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 748.48, "pct_iva": 0.21}, {"ua": "95", "ref": "RC3", "refua": "RC3_PR_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": "PR", "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Ramiro Claudio Ponce", "nif": "Y0092414Z", "telefono": "685499268", "mail": "raramirin77@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/07/2018", "contracte": 696.0, "cs_contrato": 34.0, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1392.0, "fianza_adicional": null, "fi_importe": 1392.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 12.05, "const_proym2": 59.63, "registro_cee": "6VTBG68GJ", "calif_cee": "E-E", "fecha_fin_cee": "31/12/2023", "num_cedula": "CHB06495713001", "chb_caducidad": "09/01/2029", "estado_actual": null, "subarriendo": "Si, tiene habitaciones con candado", "bi": 718.71, "pct_iva": 0.0}, {"ua": "96", "ref": "RC3", "refua": "RC3_PR_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": "PR", "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Sujerin Maria Feliz Jimenez", "nif": "X2507183E", "telefono": "650582812", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/06/2011", "contracte": 725.0, "cs_contrato": 27.5, "tipo_fin": "TR", "fecha_fin": "31/05/2027", "preaviso_fin": "31/01/2027", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1450.0, "fianza_adicional": null, "fi_importe": 1450.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 12.94, "const_proym2": 59.63, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB01769826001", "chb_caducidad": "08/04/2041", "estado_actual": null, "subarriendo": null, "bi": 771.61, "pct_iva": 0.0}, {"ua": "98", "ref": "RC3", "refua": "RC3_1_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": 1, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Giovanna Pozo Guzman", "nif": "Y2670070Z", "telefono": "627867447", "mail": "yovi.2005@hotmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/02/2019", "contracte": 690.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/01/2027", "preaviso_fin": "30/09/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 690.0, "fianza_adicional": null, "fi_importe": 690.0, "via_cobro": "Transfer.", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": "No pone nada", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 14.75, "const_proym2": 59.63, "registro_cee": "6S6VSK79V", "calif_cee": "G-F", "fecha_fin_cee": "26/01/2029", "num_cedula": "CHB01771626001", "chb_caducidad": "01/04/2041", "estado_actual": null, "subarriendo": "Si, tiene habitaciones con candado", "bi": 879.54, "pct_iva": 0.0}, {"ua": "99", "ref": "RC3", "refua": "RC3_2_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": 2, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Ernesto Cuba Flores", "nif": "26322616-J", "telefono": "650810907", "mail": "ernestocubaflores@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/04/2017", "contracte": 618.5, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/03/2027", "preaviso_fin": "30/11/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1237.0, "fianza_adicional": null, "fi_importe": 1237.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 13.5, "const_proym2": 59.63, "registro_cee": "81S58VJ5", "calif_cee": "E-E", "fecha_fin_cee": "22/03/2027", "num_cedula": "CHB01766126001", "chb_caducidad": "08/04/2041", "estado_actual": null, "subarriendo": null, "bi": 804.84, "pct_iva": 0.0}, {"ua": "100", "ref": "RC3", "refua": "RC3_2_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": 2, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Asunción Alcaraz Boro", "nif": "?", "telefono": "687738604", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/05/1933", "contracte": 34.65, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": "?", "fianza_adicional": null, "fi_importe": null, "via_cobro": "Recibo", "cl_repercusion": "Contrato renta antigua", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": "si renta antigua", "cl_ibi": "si renta antigua", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 3.95, "const_proym2": 59.63, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB01815726001", "chb_caducidad": "08/04/2041", "estado_actual": null, "subarriendo": null, "bi": 235.82, "pct_iva": 0.0}, {"ua": "101", "ref": "RC3", "refua": "RC3_3_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": 3, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Adolfo Roca Escalante", "nif": "X9619920D", "telefono": "691630241", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/12/2018", "contracte": 641.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1282.0, "fianza_adicional": null, "fi_importe": 1282.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 13.76, "const_proym2": 59.63, "registro_cee": "8PW45GGTT", "calif_cee": "F-F", "fecha_fin_cee": "19/07/2026", "num_cedula": "CHB01764026001", "chb_caducidad": "08/04/2041", "estado_actual": null, "subarriendo": null, "bi": 820.78, "pct_iva": 0.0}, {"ua": "102", "ref": "RC3", "refua": "RC3_3_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "3", "piso": 3, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Jessica Viviana Delgado", "nif": "X6456327C", "telefono": "611583569", "mail": "yeyo12@live.com", "tipo_contrato": "Vivienda", "f_inicio": "01/12/2014", "contracte": 522.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1044.0, "fianza_adicional": null, "fi_importe": 1044.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 11.79, "const_proym2": 59.63, "registro_cee": "5KDH4Q1TB", "calif_cee": "E-E", "fecha_fin_cee": "24/04/2024", "num_cedula": "CHB01812826001", "chb_caducidad": "08/04/2041", "estado_actual": null, "subarriendo": null, "bi": 703.26, "pct_iva": 0.0}, {"ua": "104", "ref": "RC5", "refua": "RC5_0_2", "uso": "Local", "direccion": "Rafael Campalans", "portal": "5", "piso": 0, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Ramón Royo Font", "nif": "38555096N", "telefono": "934482943", "mail": "royoinstal.lacions@gmail.com", "tipo_contrato": "Local", "f_inicio": "01/11/2017", "contracte": 487.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "31/10/2027", "preaviso_fin": "30/09/2027", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 974.0, "fianza_adicional": null, "fi_importe": 974.0, "via_cobro": "Recibo", "cl_repercusion": null, "cl_escalera": "SI", "cl_luz_escalera": "SI", "cl_tasas": "SI", "cl_ibi": "SI", "cl_agua": "si", "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 100.0, "m2_alquilable": 100.0, "precio_m2_alquilable": 6.54, "const_proym2": 59.63, "registro_cee": "Q8548B89D", "calif_cee": "G-F", "fecha_fin_cee": "26/10/2027", "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 653.68, "pct_iva": 0.21}, {"ua": "105", "ref": "RC5", "refua": "RC5_PR_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": "PR", "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Mauricio Andres Vargas Tierradentro", "nif": "Y6887016W", "telefono": "632759454", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/03/2023", "contracte": 650.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/08/2026", "preaviso_fin": "30/04/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1300.0, "fianza_adicional": null, "fi_importe": 1300.0, "via_cobro": "Recibo", "cl_repercusion": "Incluidos en la renta", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "No incluidos", "cl_caldera": "si", "cl_seguro": "si", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 12.84, "const_proym2": 59.63, "registro_cee": "4TK19BQRL", "calif_cee": "E-E", "fecha_fin_cee": "18/03/2033", "num_cedula": "CHB01765326001", "chb_caducidad": "01/04/2041", "estado_actual": null, "subarriendo": null, "bi": 765.82, "pct_iva": 0.0}, {"ua": "106", "ref": "RC5", "refua": "RC5_PR_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": "PR", "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Rosario Turigas Gabarro", "nif": "?", "telefono": "934495866", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/02/1935", "contracte": 37.03, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 0.32, "fianza_adicional": null, "fi_importe": 0.32, "via_cobro": "Recibo", "cl_repercusion": "Contrato renta antigua", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": "n/a", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 2.48, "const_proym2": 59.63, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB01775526001", "chb_caducidad": "01/04/2041", "estado_actual": null, "subarriendo": null, "bi": 147.74, "pct_iva": 0.0}, {"ua": "107", "ref": "RC5", "refua": "RC5_1_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": 1, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Manuel Perez Cruz", "nif": "24724788H", "telefono": "609756839", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/11/1996", "contracte": 240.4, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/10/2026", "preaviso_fin": "30/06/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 480.81, "fianza_adicional": null, "fi_importe": 480.81, "via_cobro": "Recibo", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": "SI y Tasa de basuras", "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 7.81, "const_proym2": 59.63, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB01764826001", "chb_caducidad": "28/04/2041", "estado_actual": null, "subarriendo": "Tiene una puerta con llave y candado que dice ques de la hija", "bi": 465.95, "pct_iva": 0.0}, {"ua": "108", "ref": "RC5", "refua": "RC5_1_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": 1, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Martha Marina Claros Ferrel", "nif": "Y1691964Y", "telefono": "632384536", "mail": "agustinolguerasiles@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/10/2017", "contracte": 567.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/09/2026", "preaviso_fin": "30/05/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1134.0, "fianza_adicional": null, "fi_importe": 1134.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 12.37, "const_proym2": 59.63, "registro_cee": "TL3555R3T", "calif_cee": "G-G", "fecha_fin_cee": "09/09/2027", "num_cedula": "CHB02897912001", "chb_caducidad": "21/12/2027", "estado_actual": null, "subarriendo": "Tiene una habitación con candado", "bi": 737.6, "pct_iva": 0.0}, {"ua": "109", "ref": "RC5", "refua": "RC5_2_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": 2, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Rosa Aranibar Rojas", "nif": "X6864744A", "telefono": "626944271", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/07/2007", "contracte": 700.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1400.0, "fianza_adicional": null, "fi_importe": 1400.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula aumento impuestos", "cl_escalera": "Incrementos", "cl_luz_escalera": null, "cl_tasas": "SI y Tasa de basuras", "cl_ibi": "Incrementos", "cl_agua": "Incrementos", "cl_electrodomesticos": "no cláusula", "cl_caldera": "si", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 13.1, "const_proym2": 59.63, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB01764626001", "chb_caducidad": "31/03/2041", "estado_actual": null, "subarriendo": null, "bi": 780.95, "pct_iva": 0.0}, {"ua": "111", "ref": "RC5", "refua": "RC5_3_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": 3, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Juana Solé Alcaraz", "nif": "38529107J", "telefono": "692330110", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "02/07/1974", "contracte": 81.51, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 24.04, "fianza_adicional": null, "fi_importe": 24.04, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": "si renta antigua", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 3.76, "const_proym2": 59.63, "registro_cee": null, "calif_cee": "-", "fecha_fin_cee": null, "num_cedula": "CHB01815026001", "chb_caducidad": "01/04/2041", "estado_actual": null, "subarriendo": null, "bi": 223.97, "pct_iva": 0.0}, {"ua": "112", "ref": "RC5", "refua": "RC5_3_2", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "5", "piso": 3, "puerta": 2, "municipio": "Hospitalet Llobregat", "arrendatario": "Deny Arce Vespa", "nif": "X9698139M", "telefono": "664755139", "mail": "arcevespadeny@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/03/2021", "contracte": 750.0, "cs_contrato": null, "tipo_fin": "FIN C", "fecha_fin": "01/03/2028", "preaviso_fin": "01/11/2027", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1580.0, "fianza_adicional": null, "fi_importe": 1580.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "si", "cl_luz_escalera": null, "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 14.95, "const_proym2": 59.63, "registro_cee": "GRDXRMRQ9", "calif_cee": "G-G", "fecha_fin_cee": "30/03/1931", "num_cedula": "CHB01216521001", "chb_caducidad": "24/03/2036", "estado_actual": null, "subarriendo": "Vive la mujer, el no vive. Una habitación con candado", "bi": 891.75, "pct_iva": 0.0}, {"ua": "114", "ref": "RC7", "refua": "RC7_PR_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "7", "piso": "PR", "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Mercedes Adriana Choque Rojas", "nif": "Y0955212J", "telefono": "677625082", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/04/2014", "contracte": 570.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "31/03/2027", "preaviso_fin": "30/11/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1140.0, "fianza_adicional": null, "fi_importe": 1140.0, "via_cobro": "Efectivo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 12.75, "const_proym2": 59.63, "registro_cee": "7G5VMQF3J", "calif_cee": "F-G", "fecha_fin_cee": "17/02/2024", "num_cedula": "CHB 00940214001", "chb_caducidad": "27/02/2029", "estado_actual": null, "subarriendo": "Si, tiene habitaciones con llave", "bi": 760.36, "pct_iva": 0.0}, {"ua": "115", "ref": "RC7", "refua": "RC7_1_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "7", "piso": 1, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Aldo Chelton Valencia Alvarez", "nif": "Y1732770X", "telefono": "659903004", "mail": "mujer: Vloren302@gmail.com - Aldo transportes7ad@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/05/2012", "contracte": 575.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/04/2027", "preaviso_fin": "30/12/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1150.0, "fianza_adicional": null, "fi_importe": 1150.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 12.11, "const_proym2": 59.63, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB01833026001", "chb_caducidad": "21/05/2041", "estado_actual": null, "subarriendo": null, "bi": 721.96, "pct_iva": 0.0}, {"ua": "116", "ref": "RC7", "refua": "RC7_2_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "7", "piso": 2, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Ali  QamaryTauqeer", "nif": "X8192323E", "telefono": "632396425", "mail": "alibcn131991@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/07/2018", "contracte": 615.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/06/2026", "preaviso_fin": "28/02/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 1230.0, "fianza_adicional": null, "fi_importe": 1230.0, "via_cobro": "Efectivo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 13.3, "const_proym2": 59.63, "registro_cee": "5MWV31V7P", "calif_cee": "F-G", "fecha_fin_cee": "02/06/2024", "num_cedula": "CHB01814426001", "chb_caducidad": "21/05/2041", "estado_actual": null, "subarriendo": null, "bi": 793.08, "pct_iva": 0.0}, {"ua": "117", "ref": "RC7", "refua": "RC7_3_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "7", "piso": 3, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Dolores Benages", "nif": "?", "telefono": "933335855", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/04/1934", "contracte": 37.21, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "31/08/2099", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": null, "fianza_adicional": null, "fi_importe": 0.0, "via_cobro": "Recibo", "cl_repercusion": "Sin cláusula de gastos", "cl_escalera": "no", "cl_luz_escalera": null, "cl_tasas": "si renta antigua", "cl_ibi": "no", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 2.45, "const_proym2": 59.63, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": "CHB01816026001", "chb_caducidad": "21/05/2041", "estado_actual": null, "subarriendo": null, "bi": 146.22, "pct_iva": 0.0}, {"ua": "118", "ref": "RC7", "refua": "RC7_4_1", "uso": "Vivienda", "direccion": "Rafael Campalans", "portal": "7", "piso": 4, "puerta": 1, "municipio": "Hospitalet Llobregat", "arrendatario": "Rosa Vazquez Espinoza", "nif": "26910740G", "telefono": "686035321", "mail": "rosavasquezbcn@gmail.com", "tipo_contrato": "Vivienda", "f_inicio": "01/12/2018", "contracte": 375.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/11/2026", "preaviso_fin": "30/07/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": 750.0, "fianza_adicional": null, "fi_importe": 750.0, "via_cobro": "Recibo", "cl_repercusion": "Cáusula gastos generales", "cl_escalera": "no", "cl_luz_escalera": "si", "cl_tasas": "SI", "cl_ibi": "no", "cl_agua": "si", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": 59.63, "m2_alquilable": 59.63, "precio_m2_alquilable": 8.45, "const_proym2": 59.63, "registro_cee": "SP4TQZWB", "calif_cee": "G-G", "fecha_fin_cee": "11/10/2026", "num_cedula": "CHB018042260001", "chb_caducidad": "21/05/2041", "estado_actual": null, "subarriendo": null, "bi": 503.6, "pct_iva": 0.0}, {"ua": "201", "ref": "PALL", "refua": "PALL_None_None", "uso": "Huerto", "direccion": "08156A01100007", "portal": null, "piso": null, "puerta": null, "municipio": "Pallejà", "arrendatario": "Miguel Cardenas Galan", "nif": "46324392T", "telefono": "674963644", "mail": null, "tipo_contrato": "Huerto", "f_inicio": null, "contracte": 123.97, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "30/11/2099", "tipo_revision": null, "fecha_revision_renta": null, "fi_incasol": null, "fianza_adicional": null, "fi_importe": null, "via_cobro": null, "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 1300.0, "m2_alquilable": null, "precio_m2_alquilable": null, "const_proym2": null, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 0.0, "pct_iva": 0.21}, {"ua": "202", "ref": "PALL", "refua": "PALL_None_None", "uso": "Huerto", "direccion": "08156A00800021", "portal": null, "piso": null, "puerta": null, "municipio": "Pallejà", "arrendatario": "Manuel del Rosal Ortiz", "nif": "46675327R", "telefono": "607733661", "mail": null, "tipo_contrato": "Huerto", "f_inicio": null, "contracte": 41.32, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "30/11/2099", "tipo_revision": null, "fecha_revision_renta": null, "fi_incasol": null, "fianza_adicional": null, "fi_importe": null, "via_cobro": null, "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 2000.0, "m2_alquilable": null, "precio_m2_alquilable": null, "const_proym2": null, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 41.32, "pct_iva": 0.21}, {"ua": "203", "ref": "PALL", "refua": "PALL_None_None", "uso": "Huerto", "direccion": "08156A00100038", "portal": null, "piso": null, "puerta": null, "municipio": "Pallejà", "arrendatario": "Juan Morales Martín,", "nif": "23780088C", "telefono": "690906998", "mail": null, "tipo_contrato": "Huerto", "f_inicio": null, "contracte": 123.97, "cs_contrato": null, "tipo_fin": "INDEF", "fecha_fin": "31/12/2099", "preaviso_fin": "30/11/2099", "tipo_revision": null, "fecha_revision_renta": null, "fi_incasol": null, "fianza_adicional": null, "fi_importe": null, "via_cobro": null, "cl_repercusion": null, "cl_escalera": null, "cl_luz_escalera": null, "cl_tasas": null, "cl_ibi": null, "cl_agua": null, "cl_electrodomesticos": null, "cl_caldera": null, "cl_seguro": null, "m2_adoptada": 4500.0, "m2_alquilable": null, "precio_m2_alquilable": null, "const_proym2": null, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 123.97, "pct_iva": 0.21}, {"ua": "205", "ref": "PALL", "refua": "PALL_None_None", "uso": "Vivienda", "direccion": "Camí de can Coll", "portal": null, "piso": null, "puerta": null, "municipio": "Pallejà", "arrendatario": "Christopher Arrué Barragan", "nif": "46142291J", "telefono": "602126185", "mail": null, "tipo_contrato": "Vivienda", "f_inicio": "01/10/2014", "contracte": 50.0, "cs_contrato": null, "tipo_fin": "TR", "fecha_fin": "30/09/2026", "preaviso_fin": "30/05/2026", "tipo_revision": "IPC", "fecha_revision_renta": "01/01/2026", "fi_incasol": null, "fianza_adicional": null, "fi_importe": null, "via_cobro": null, "cl_repercusion": null, "cl_escalera": "no", "cl_luz_escalera": "no", "cl_tasas": "no", "cl_ibi": "no", "cl_agua": "no", "cl_electrodomesticos": "no cláusula", "cl_caldera": "no cláusula", "cl_seguro": "no cláusula", "m2_adoptada": null, "m2_alquilable": null, "precio_m2_alquilable": null, "const_proym2": null, "registro_cee": null, "calif_cee": null, "fecha_fin_cee": null, "num_cedula": null, "chb_caducidad": null, "estado_actual": null, "subarriendo": null, "bi": 0.0, "pct_iva": 0.0}];
+
+// --- UTILS ---
+const fmt = v => v ?? '—';
+const fmtE = v => {
+  if(v===null||v===undefined) return '—';
+  const n = parseFloat(v);
+  if(isNaN(n)) return '—';
+  const [int,dec] = n.toFixed(2).split('.');
+  const intFmt = int.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  return intFmt + ',' + dec + ' €';
+};
+const initials = n => n ? n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase() : '?';
+const COLORS = ['#4f46e5','#0284c7','#16a34a','#d97706','#dc2626','#7c3aed','#ea580c','#0891b2'];
+const colorFor = ua => COLORS[parseInt(ua) % COLORS.length] || COLORS[0];
+
+const usoBadge = uso => {
+  if(!uso) return {cls:'local',label:'—'};
+  const u = uso.toLowerCase();
+  if(u.includes('vivienda')) return {cls:'vivienda',label:'🏠 Vivienda'};
+  if(u.includes('oficina'))  return {cls:'oficina',  label:'🏢 Oficina'};
+  if(u.includes('huerto'))   return {cls:'huerto',   label:'🌿 Huerto'};
+  return {cls:'local', label:'🏪 Local'};
+};
+
+// --- SELECTOR ---
+let filtroActivo = 'todos';
+let inquilino = null;
+const commsStore = {};
+const notasStore = {};
+const planoStore = {};
+const tecnicaStore = {};
+const tecnicaFotosStore = {};
+const clausulasFotosStore = {};
+const oneDriveStore = {};
+let tempFotosComm = [];
+let tempFotosNota = [];
+let editingCommId = null;
+let editingNotaId = null;
+let uidCounter = 1;
+const newId = () => 'id'+(uidCounter++);
+
+const TECNICA_CAMPOS = [
+  {k:'gas', label:'Tiene gas'},
+  {k:'caldera', label:'Caldera/termo (tipo, marca, modelo, año)'},
+  {k:'cocina', label:'Cocina (reformada, año, estado)'},
+  {k:'encimera', label:'Encimera (tipo, marca)'},
+  {k:'horno', label:'Horno (tipo, marca, modelo)'},
+  {k:'microondas', label:'Microondas'},
+  {k:'campana', label:'Campana extractora (tipo, marca)'},
+  {k:'lavaplatos', label:'Lavaplatos'},
+  {k:'nevera', label:'Nevera (tipo, tamaño)'},
+  {k:'calefaccion', label:'Calefacción (tipo)'},
+  {k:'clima', label:'Clima / ventilación (tipo, marca)'},
+  {k:'cuadro', label:'Cuadro eléctrico (año, cableado)'},
+  {k:'paredes', label:'Estado paredes (papel/pintado/estucado)'},
+  {k:'otras', label:'Otras observaciones'},
+];
+
+function renderStats(){
+  document.getElementById('cnt-total').textContent = DATA.length;
+  document.getElementById('cnt-vivienda').textContent = DATA.filter(d=>d.uso==='Vivienda').length;
+  document.getElementById('cnt-local').textContent = DATA.filter(d=>d.uso!=='Vivienda'&&d.uso!=='Huerto').length;
+}
+
+function setFiltro(f, btn){
+  filtroActivo = f;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderLista();
+}
+
+function renderLista(){
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const list = document.getElementById('ua-list');
+  let items = DATA.filter(d => {
+    const matchFiltro = filtroActivo === 'todos' || (d.uso && d.uso.toLowerCase().includes(filtroActivo.toLowerCase()));
+    const matchQ = !q || [d.arrendatario,d.direccion,d.nif,d.ua,d.ref,d.municipio].some(v=>v&&v.toLowerCase().includes(q));
+    return matchFiltro && matchQ;
+  });
+
+  if(!items.length){
+    list.innerHTML = '<div class="ua-empty"><div class="ico">🔍</div><p>Sin resultados</p></div>';
+    return;
+  }
+
+  list.innerHTML = items.map(d => {
+    const b = usoBadge(d.uso);
+    const renta = d.bi ? Math.round(d.bi)+' €' : '—';
+    const dirCorta = `${d.direccion}${d.portal?' '+d.portal:''}${d.puerta?' '+d.puerta:''}`;
+    return `<div class="ua-item" onclick="abrirFicha('${d.ua}')">
+      <div class="ua-avatar" style="background:${colorFor(d.ua)}">${initials(d.arrendatario)}</div>
+      <div class="ua-info">
+        <div class="ua-name">${d.arrendatario}</div>
+        <div class="ua-addr">${d.refua} · ${dirCorta}</div>
+      </div>
+      <div class="ua-right">
+        <div class="ua-renta">${renta}</div>
+        <span class="badge ${b.cls}">${b.label}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// --- FICHA ---
+function abrirFicha(ua){
+  inquilino = DATA.find(d=>d.ua===ua);
+  if(!inquilino) return;
+  const d = inquilino;
+  
+  document.getElementById('screen-selector').style.display = 'none';
+  document.getElementById('screen-ficha').style.display = 'block';
+  document.getElementById('btn-imprimir').style.display = '';
+  document.getElementById('btn-volver').style.display = '';
+
+  // Breadcrumb
+  const dirCompleta = `${d.direccion} ${d.portal||''}${d.piso!=null && d.piso!=='' ? ', '+d.piso : ''}${d.puerta!=null && d.puerta!=='' ? ' '+d.puerta : ''}`;
+  document.getElementById('bc-addr').textContent = dirCompleta;
+
+  // Avatar
+  const av = document.getElementById('f-avatar');
+  av.textContent = initials(d.arrendatario);
+  av.style.background = colorFor(d.ua);
+
+  // Hero
+  document.getElementById('f-nombre').textContent = d.arrendatario;
+  document.getElementById('f-addr-sub').innerHTML = `📍 ${dirCompleta} · ${d.municipio}`;
+
+  // Badges
+  const b = usoBadge(d.uso);
+  const badgeCls = {vivienda:'blue',local:'orange',oficina:'purple',huerto:'green'}[b.cls]||'blue';
+  document.getElementById('f-badges').innerHTML = `
+    <span class="badge-lg green">● Activo</span>
+    <span class="badge-lg ${badgeCls}">${b.label}</span>`;
+
+  // Stats
+  document.getElementById('f-renta').textContent = d.bi ? fmtE(d.bi) : '—';
+  document.getElementById('f-renta-sub').textContent = d.pct_iva>0 ? `IVA ${Math.round(d.pct_iva*100)}%` : 'Sin IVA';
+  document.getElementById('f-inicio').textContent = fmt(d.f_inicio);
+  document.getElementById('f-anos').textContent = '';
+  document.getElementById('f-fin').textContent = fmt(d.fecha_fin);
+  document.getElementById('f-tipo-fin-sub').textContent = d.tipo_fin ? `Tipo fin: ${d.tipo_fin}` : '—';
+  document.getElementById('f-m2').textContent = d.m2_adoptada ? `${d.m2_adoptada} m²` : '—';
+  document.getElementById('f-m2-sub').textContent = d.precio_m2_alquilable ? `${fmtE(d.precio_m2_alquilable)}/m²` : '—';
+
+  // Personales
+  document.getElementById('f-personales').innerHTML = field('Arrendatario', d.arrendatario)
+    + field('NIF / NIE', d.nif, true)
+    + field('Teléfono', d.telefono ? `<a href="tel:${d.telefono}">${d.telefono}</a>` : '—', false, true)
+    + field('Email', d.mail ? `<a href="mailto:${d.mail}">${d.mail}</a>` : '—', false, true);
+
+  // Contrato
+  const contratoInicial = (d.contracte||0) + (d.cs_contrato||0);
+  document.getElementById('f-contrato').innerHTML =
+      field('Tipo de contrato', fmt(d.tipo_contrato))
+    + field('Inicio contrato', fmt(d.f_inicio))
+    + field('Contrato inicial (total)', contratoInicial ? fmtE(contratoInicial) : '—')
+    + field('Renta contrato inicial', d.contracte!=null ? fmtE(d.contracte) : '—')
+    + field('Coste servicios inicial', d.cs_contrato!=null ? fmtE(d.cs_contrato) : '—')
+    + field('&nbsp;', '')
+    + field('Fecha fin', fmt(d.fecha_fin))
+    + field('Tipo fin', fmt(d.tipo_fin))
+    + field('Preaviso fin', fmt(d.preaviso_fin))
+    + field('&nbsp;', '')
+    + field('Tipo revisión', fmt(d.tipo_revision))
+    + field('Fecha revisión renta', fmt(d.fecha_revision_renta))
+    + field('Fianza total (Fi. Importe)', d.fi_importe!=null ? fmtE(d.fi_importe) : '—')
+    + field('Fi. Incasol', d.fi_incasol!=null ? fmtE(d.fi_incasol) : '—')
+    + field('Fianza adicional', d.fianza_adicional!=null ? fmtE(d.fianza_adicional) : '—')
+    + field('&nbsp;', '')
+    + field('Datos de cobro', fmt(d.via_cobro));
+
+  // Cláusulas del contrato
+  document.getElementById('f-clausulas').innerHTML =
+      field('Cláusula repercusión de gastos', fmt(d.cl_repercusion))
+    + field('Gastos Escalera', fmt(d.cl_escalera))
+    + field('Luz Escalera', fmt(d.cl_luz_escalera))
+    + field('Tasas', fmt(d.cl_tasas))
+    + field('Impuestos IBI', fmt(d.cl_ibi))
+    + field('Coste Servicios Agua', fmt(d.cl_agua))
+    + field('Electrodomésticos', fmt(d.cl_electrodomesticos))
+    + field('Rev. Equipos ACS', fmt(d.cl_caldera))
+    + field('Seguro', fmt(d.cl_seguro));
+
+  // Datos del piso
+  const ceeVal = [d.registro_cee, d.calif_cee].filter(Boolean).join(' ') || '—';
+  const ceeSub = d.fecha_fin_cee ? `<div style="font-size:11px;color:var(--slate-400);margin-top:2px">Fecha fin CEE: ${d.fecha_fin_cee}</div>` : '';
+  document.getElementById('f-piso').innerHTML =
+      field('UA', d.refua, true)
+    + field('m2 Adoptada', d.m2_adoptada ? `${d.m2_adoptada} m²` : '—')
+    + field('m2 Alquilable', d.m2_alquilable ? `${d.m2_alquilable} m²` : '—')
+    + field('Const. Proym2', d.const_proym2 ? fmtE(d.const_proym2) : '—')
+    + field('Registro CEE', ceeVal + ceeSub, false, true)
+    + field('CHB (Nº Cédula)', d.num_cedula
+        ? d.num_cedula + (d.chb_caducidad ? `<div style="font-size:11px;color:var(--slate-400);margin-top:2px">Fecha fin CHB: ${d.chb_caducidad}</div>` : '')
+        : '—', false, true)
+    + field('Estado actual', fmt(d.estado_actual))
+    + field('Subarriendo', fmt(d.subarriendo));
+
+  // Fotos cláusulas
+  if(!clausulasFotosStore[ua]) clausulasFotosStore[ua]=[];
+  renderFotosClausulas();
+
+  // Comunicaciones
+  if(!commsStore[ua]) commsStore[ua] = [];
+  resetCommForm();
+  renderComms();
+
+  // Notas / Ocupación
+  if(!notasStore[ua]) notasStore[ua] = [];
+  resetNotaForm();
+  renderNotas();
+
+  // Plano
+  renderPlano();
+
+  // Fotos OneDrive
+  renderOdLink();
+
+  // Ficha técnica
+  renderTecnica();
+
+  // Documentos
+  if(!docsStore[ua]) docsStore[ua]=[];
+  renderDocs();
+
+  // Reset tabs
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-datos').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+  document.getElementById('cnt-comms').textContent = commsStore[ua].length;
+  document.getElementById('cnt-notas').textContent = notasStore[ua].length;
+  
+  // Fecha default
+  document.getElementById('n-fecha').valueAsDate = new Date();
+  window.scrollTo(0,0);
+}
+
+function field(label, val, mono=false, raw=false){
+  return `<div class="data-field"><label>${label}</label><div class="val${mono?' mono':''}">${raw?val:(val||'—')}</div></div>`;
+}
+
+function volverSelector(){
+  document.getElementById('screen-selector').style.display = '';
+  document.getElementById('screen-ficha').style.display = 'none';
+  document.getElementById('btn-imprimir').style.display = 'none';
+  document.getElementById('btn-volver').style.display = 'none';
+  inquilino = null;
+}
+
+// --- TABS ---
+function switchTab(tab, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// --- COMUNICACIONES ---
+const tipoConf = {
+  llamada:    {icon:'📞',cls:'tl-llamada',    label:'Llamada'},
+  email:      {icon:'📧',cls:'tl-email',      label:'Email'},
+  reclamacion:{icon:'⚠️',cls:'tl-reclamacion',label:'Reclamación de pago'},
+  visita:     {icon:'🏠',cls:'tl-visita',     label:'Visita presencial'},
+  carta:      {icon:'📄',cls:'tl-carta',      label:'Carta / Burofax'},
+  nota:       {icon:'📝',cls:'tl-nota',       label:'Nota interna'},
+};
+
+function renderComms(){
+  if(!inquilino) return;
+  const comms = commsStore[inquilino.ua] || [];
+  const filtro = document.getElementById('filtro-tipo').value;
+  const filtered = filtro==='todas' ? comms : comms.filter(c=>c.tipo===filtro);
+  const tl = document.getElementById('timeline');
+  if(!filtered.length){
+    tl.innerHTML = '<div class="ua-empty"><div class="ico">💬</div><p>Sin comunicaciones registradas.</p></div>';
+    return;
+  }
+  tl.innerHTML = filtered.map(c=>{
+    const cfg = tipoConf[c.tipo]||tipoConf.nota;
+    const fotosHtml = (c.fotos||[]).length ? `<div class="foto-thumbs">${c.fotos.map(f=>`<img src="${f.dataUrl}" class="foto-thumb">`).join('')}</div>` : '';
+    return `<div class="tl-item ${cfg.cls}">
+      <div class="tl-icon">${cfg.icon}</div>
+      <div class="tl-content">
+        <div class="tl-meta"><span class="tl-type">${cfg.label}</span><span class="tl-date">${c.fecha}</span></div>
+        <div class="tl-text">${c.texto}</div>
+        ${fotosHtml}
+        <div class="tl-actions">
+          <button class="btn-link" onclick="editarComm('${c.id}')">✏️ Editar</button>
+          <button class="btn-link danger" onclick="borrarComm('${c.id}')">🗑️ Eliminar</button>
+        </div>
+      </div></div>`;
+  }).join('');
+}
+
+function filtrarComms(){ renderComms(); }
+
+function toggleCommForm(){
+  document.getElementById('comm-form').classList.toggle('vis');
+  if(!document.getElementById('comm-form').classList.contains('vis')) resetCommForm();
+}
+
+function resetCommForm(){
+  editingCommId = null;
+  tempFotosComm = [];
+  document.getElementById('n-texto').value='';
+  document.getElementById('n-fotos-preview').innerHTML='';
+  document.getElementById('n-fotos-input').value='';
+}
+
+function editarComm(id){
+  const comms = commsStore[inquilino.ua]||[];
+  const c = comms.find(x=>x.id===id);
+  if(!c) return;
+  editingCommId = id;
+  document.getElementById('n-tipo').value = c.tipo;
+  document.getElementById('n-fecha').valueAsDate = c.fechaRaw ? new Date(c.fechaRaw) : new Date();
+  document.getElementById('n-texto').value = c.texto;
+  tempFotosComm = (c.fotos||[]).slice();
+  renderFotoPreview('n-fotos-preview', tempFotosComm, 'comm');
+  document.getElementById('comm-form').classList.add('vis');
+  document.getElementById('comm-form').scrollIntoView({behavior:'smooth'});
+}
+
+function borrarComm(id){
+  if(!confirm('¿Eliminar esta comunicación? No se puede deshacer.')) return;
+  commsStore[inquilino.ua] = (commsStore[inquilino.ua]||[]).filter(c=>c.id!==id);
+  document.getElementById('cnt-comms').textContent = commsStore[inquilino.ua].length;
+  renderComms();
+}
+
+function guardarComm(){
+  if(!inquilino) return;
+  const tipo  = document.getElementById('n-tipo').value;
+  const fecha = document.getElementById('n-fecha').value;
+  const texto = document.getElementById('n-texto').value.trim();
+  if(!texto){ alert('Escribe una descripción.'); return; }
+  const d = new Date(fecha);
+  const fechaStr = d.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
+  if(!commsStore[inquilino.ua]) commsStore[inquilino.ua]=[];
+  if(editingCommId){
+    const item = commsStore[inquilino.ua].find(c=>c.id===editingCommId);
+    if(item){ item.tipo=tipo; item.fecha=fechaStr; item.fechaRaw=fecha; item.texto=texto; item.fotos=tempFotosComm.slice(); }
+  } else {
+    commsStore[inquilino.ua].unshift({id:newId(),tipo,fecha:fechaStr,fechaRaw:fecha,texto,fotos:tempFotosComm.slice()});
+  }
+  document.getElementById('cnt-comms').textContent = commsStore[inquilino.ua].length;
+  document.getElementById('comm-form').classList.remove('vis');
+  resetCommForm();
+  renderComms();
+}
+
+// --- FOTOS (genérico para comm y nota) ---
+function onFotosSelected(ev, kind){
+  const files = Array.from(ev.target.files||[]);
+  const target = kind==='comm' ? tempFotosComm : tempFotosNota;
+  const previewId = kind==='comm' ? 'n-fotos-preview' : 'nt-fotos-preview';
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      target.push({id:newId(), dataUrl:e.target.result});
+      renderFotoPreview(previewId, target, kind);
+    };
+    reader.readAsDataURL(file);
+  });
+  ev.target.value='';
+}
+
+function renderFotoPreview(containerId, fotos, kind){
+  document.getElementById(containerId).innerHTML = fotos.map(f=>
+    `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFoto('${f.id}','${kind}')">✕</button></span>`
+  ).join('');
+}
+
+function quitarFoto(id, kind){
+  if(!confirm('¿Eliminar esta foto?')) return;
+  if(kind==='comm'){
+    tempFotosComm = tempFotosComm.filter(f=>f.id!==id);
+    renderFotoPreview('n-fotos-preview', tempFotosComm, 'comm');
+  } else {
+    tempFotosNota = tempFotosNota.filter(f=>f.id!==id);
+    renderFotoPreview('nt-fotos-preview', tempFotosNota, 'nota');
+  }
+}
+
+// --- NOTAS / OCUPACIÓN ---
+function renderNotas(){
+  if(!inquilino) return;
+  const notas = notasStore[inquilino.ua] || [];
+  const list = document.getElementById('notas-list');
+  if(!notas.length){
+    list.innerHTML = '<div class="ua-empty"><div class="ico">📝</div><p>Sin notas registradas.</p></div>';
+    return;
+  }
+  list.innerHTML = notas.map(n=>{
+    const fotosHtml = (n.fotos||[]).length ? `<div class="foto-thumbs">${n.fotos.map(f=>`<img src="${f.dataUrl}" class="foto-thumb">`).join('')}</div>` : '';
+    return `<div class="tl-item tl-nota">
+      <div class="tl-icon">📝</div>
+      <div class="tl-content">
+        <div class="tl-meta"><span class="tl-type">Nota</span><span class="tl-date">${n.fecha||'Sin fecha'}</span></div>
+        <div class="tl-text">${n.texto}</div>
+        ${fotosHtml}
+        <div class="tl-actions">
+          <button class="btn-link" onclick="editarNota('${n.id}')">✏️ Editar</button>
+          <button class="btn-link danger" onclick="borrarNota('${n.id}')">🗑️ Eliminar</button>
+        </div>
+      </div></div>`;
+  }).join('');
+}
+
+function toggleNotaForm(){
+  document.getElementById('nota-form').classList.toggle('vis');
+  if(!document.getElementById('nota-form').classList.contains('vis')) resetNotaForm();
+}
+
+function resetNotaForm(){
+  editingNotaId = null;
+  tempFotosNota = [];
+  document.getElementById('nt-texto').value='';
+  document.getElementById('nt-fecha').value='';
+  document.getElementById('nt-fotos-preview').innerHTML='';
+  document.getElementById('nt-fotos-input').value='';
+}
+
+function editarNota(id){
+  const notas = notasStore[inquilino.ua]||[];
+  const n = notas.find(x=>x.id===id);
+  if(!n) return;
+  editingNotaId = id;
+  document.getElementById('nt-fecha').value = n.fechaRaw||'';
+  document.getElementById('nt-texto').value = n.texto;
+  tempFotosNota = (n.fotos||[]).slice();
+  renderFotoPreview('nt-fotos-preview', tempFotosNota, 'nota');
+  document.getElementById('nota-form').classList.add('vis');
+  document.getElementById('nota-form').scrollIntoView({behavior:'smooth'});
+}
+
+function borrarNota(id){
+  if(!confirm('¿Eliminar esta nota? No se puede deshacer.')) return;
+  notasStore[inquilino.ua] = (notasStore[inquilino.ua]||[]).filter(n=>n.id!==id);
+  document.getElementById('cnt-notas').textContent = notasStore[inquilino.ua].length;
+  renderNotas();
+}
+
+function guardarNota(){
+  if(!inquilino) return;
+  const fechaRaw = document.getElementById('nt-fecha').value;
+  const texto = document.getElementById('nt-texto').value.trim();
+  if(!texto){ alert('Escribe la nota.'); return; }
+  const fechaStr = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '';
+  if(!notasStore[inquilino.ua]) notasStore[inquilino.ua]=[];
+  if(editingNotaId){
+    const item = notasStore[inquilino.ua].find(n=>n.id===editingNotaId);
+    if(item){ item.fechaRaw=fechaRaw; item.fecha=fechaStr; item.texto=texto; item.fotos=tempFotosNota.slice(); }
+  } else {
+    notasStore[inquilino.ua].unshift({id:newId(),fechaRaw,fecha:fechaStr,texto,fotos:tempFotosNota.slice()});
+  }
+  document.getElementById('cnt-notas').textContent = notasStore[inquilino.ua].length;
+  document.getElementById('nota-form').classList.remove('vis');
+  resetNotaForm();
+  renderNotas();
+}
+
+// --- PLANO ---
+function renderPlano(){
+  const url = planoStore[inquilino.ua];
+  document.getElementById('plano-view').innerHTML = url
+    ? `<img src="${url}" style="max-width:100%;border-radius:10px;border:1px solid var(--slate-200)"><div style="margin-top:8px"><button class="btn-link danger" onclick="quitarPlano()">🗑️ Eliminar plano</button></div>`
+    : `<div class="ua-empty"><div class="ico">📐</div><p>Sin plano subido todavía.</p></div>`;
+}
+
+function onPlanoSelected(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{ planoStore[inquilino.ua] = e.target.result; renderPlano(); };
+  reader.readAsDataURL(file);
+  ev.target.value='';
+}
+
+function quitarPlano(){
+  if(!confirm('¿Eliminar el plano?')) return;
+  delete planoStore[inquilino.ua];
+  renderPlano();
+}
+
+// --- FICHA TÉCNICA ---
+function renderTecnica(){
+  if(!tecnicaStore[inquilino.ua]) tecnicaStore[inquilino.ua] = {};
+  if(!tecnicaFotosStore[inquilino.ua]) tecnicaFotosStore[inquilino.ua] = {};
+  const t = tecnicaStore[inquilino.ua];
+  document.getElementById('ft-grid').innerHTML = TECNICA_CAMPOS.map(c=>{
+    const fotos = tecnicaFotosStore[inquilino.ua][c.k] || [];
+    return `<div class="ft-row" style="border-bottom:1px solid var(--slate-100);padding:12px 0">
+      <div class="fg"><label>${c.label}</label><input type="text" data-ft="${c.k}" value="${(t[c.k]||'').replace(/"/g,'&quot;')}" placeholder="—"></div>
+      <div class="foto-thumbs" id="ft-fotos-${c.k}">${fotos.map(f=>
+        `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFotoTecnica('${c.k}','${f.id}')">✕</button></span>`
+      ).join('')}</div>
+      <input type="file" accept="image/*" multiple onchange="onFotoTecnicaSelected(event,'${c.k}')" style="font-size:11px;margin-top:6px">
+    </div>`;
+  }).join('');
+}
+
+function onFotoTecnicaSelected(ev, campo){
+  const files = Array.from(ev.target.files||[]);
+  if(!tecnicaFotosStore[inquilino.ua][campo]) tecnicaFotosStore[inquilino.ua][campo] = [];
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      tecnicaFotosStore[inquilino.ua][campo].push({id:newId(), dataUrl:e.target.result});
+      renderTecnicaFotos(campo);
+    };
+    reader.readAsDataURL(file);
+  });
+  ev.target.value='';
+}
+
+function renderTecnicaFotos(campo){
+  const fotos = tecnicaFotosStore[inquilino.ua][campo] || [];
+  document.getElementById('ft-fotos-'+campo).innerHTML = fotos.map(f=>
+    `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFotoTecnica('${campo}','${f.id}')">✕</button></span>`
+  ).join('');
+}
+
+function quitarFotoTecnica(campo, id){
+  if(!confirm('¿Eliminar esta foto?')) return;
+  tecnicaFotosStore[inquilino.ua][campo] = (tecnicaFotosStore[inquilino.ua][campo]||[]).filter(f=>f.id!==id);
+  renderTecnicaFotos(campo);
+}
+
+function guardarTecnica(){
+  if(!inquilino) return;
+  const t = {};
+  document.querySelectorAll('#ft-grid [data-ft]').forEach(inp=>{ t[inp.dataset.ft] = inp.value.trim(); });
+  tecnicaStore[inquilino.ua] = t;
+  alert('Ficha técnica guardada (prototipo, sin persistencia real todavía).');
+}
+
+// --- FOTOS (carpeta OneDrive) ---
+function renderOdLink(){
+  const url = oneDriveStore[inquilino.ua] || '';
+  document.getElementById('od-link-input').value = url;
+  document.getElementById('od-link-view').innerHTML = url
+    ? `<a href="${url}" target="_blank" class="btn-save" style="display:inline-block;text-decoration:none">📂 Abrir carpeta en OneDrive</a>`
+    : `<p style="font-size:12px;color:var(--slate-400)">Sin enlace guardado todavía.</p>`;
+}
+
+function guardarOdLink(){
+  if(!inquilino) return;
+  const url = document.getElementById('od-link-input').value.trim();
+  oneDriveStore[inquilino.ua] = url;
+  renderOdLink();
+}
+
+// --- PRINT ---
+function showPrint(){
+  if(!inquilino) return;
+  const d = inquilino;
+  // Mostrar modal de checkboxes
+  document.getElementById('modal-informe').style.display='flex';
+  document.getElementById('modal-informe').style.alignItems='center';
+  document.getElementById('modal-informe').style.justifyContent='center';
+}
+
+function cerrarInforme(){
+  document.getElementById('modal-informe').style.display='none';
+}
+
+function generarInforme(){
+  const d = inquilino;
+  const inc = id => document.getElementById(id).checked;
+  const E = (t,v) => v ? `<tr><td class="lbl">${t}</td><td>${v}</td></tr>` : '';
+  const S = t => `<tr><th colspan="2" class="sec">${t}</th></tr>`;
+  let html = `<div class="print-cnt" id="print-content">
+    <div class="ph-name">${d.arrendatario}</div>
+    <div class="ph-addr">${d.direccion||''} ${d.portal||''} ${d.piso!=null?d.piso:''} ${d.puerta!=null?d.puerta:''} · ${d.municipio||''} · ${d.refua}</div>
+    <hr class="ph-div">`;
+
+  if(inc('ch-datos')){
+    html+=`<table class="pt">${S('DATOS PERSONALES')}
+      ${E('Arrendatario',d.arrendatario)}${E('NIF/NIE',d.nif)}${E('Teléfono',d.telefono)}${E('Email',d.mail)}</table>`;
+  }
+  if(inc('ch-contrato')){
+    const ci = ((d.contracte||0)+(d.cs_contrato||0));
+    html+=`<table class="pt">${S('CONTRATO')}
+      ${E('Tipo',d.tipo_contrato)}${E('Inicio',d.f_inicio)}
+      ${E('Cto. inicial total',ci?fmtE(ci):'—')}${E('Renta inicial',d.contracte!=null?fmtE(d.contracte):'—')}
+      ${E('Coste servicios inicial',d.cs_contrato!=null?fmtE(d.cs_contrato):'—')}
+      ${E('Fecha fin',d.fecha_fin)}${E('Tipo fin',d.tipo_fin)}${E('Preaviso fin',d.preaviso_fin)}
+      ${E('Tipo revisión',d.tipo_revision)}${E('Fecha revisión renta',d.fecha_revision_renta)}
+      ${E('Fianza total',d.fi_importe!=null?fmtE(d.fi_importe):'—')}
+      ${E('Fi. Incasol',d.fi_incasol!=null?fmtE(d.fi_incasol):'—')}
+      ${E('Fianza adicional',d.fianza_adicional!=null?fmtE(d.fianza_adicional):'—')}
+      ${E('Cobro',d.via_cobro)}</table>`;
+  }
+  if(inc('ch-clausulas')){
+    html+=`<table class="pt">${S('CLÁUSULAS DEL CONTRATO')}
+      ${E('Repercusión gastos',d.cl_repercusion)}${E('Gastos Escalera',d.cl_escalera)}
+      ${E('Luz Escalera',d.cl_luz_escalera)}${E('Tasas',d.cl_tasas)}
+      ${E('Impuestos IBI',d.cl_ibi)}${E('Coste Serv. Agua',d.cl_agua)}
+      ${E('Electrodomésticos',d.cl_electrodomesticos)}${E('Rev. Equipos ACS',d.cl_caldera)}
+      ${E('Seguro',d.cl_seguro)}</table>`;
+    const clFotos = clausulasFotosStore[d.ua]||[];
+    if(clFotos.length) html+=`<div class="pt-fotos">${clFotos.map(f=>`<img src="${f.dataUrl}" class="pt-foto">`).join('')}</div>`;
+  }
+  if(inc('ch-piso')){
+    const ceeVal = [d.registro_cee,d.calif_cee].filter(Boolean).join(' ')||'—';
+    html+=`<table class="pt">${S('DATOS DEL PISO')}
+      ${E('UA',d.refua)}${E('m2 Adoptada',d.m2_adoptada?d.m2_adoptada+' m²':'—')}
+      ${E('m2 Alquilable',d.m2_alquilable?d.m2_alquilable+' m²':'—')}
+      ${E('Const. Proym2',d.const_proym2?fmtE(d.const_proym2):'—')}
+      ${E('Registro CEE',ceeVal)}${E('Fecha fin CEE',d.fecha_fin_cee)}
+      ${E('CHB (Nº Cédula)',d.num_cedula)}${E('Fecha fin CHB',d.chb_caducidad)}
+      ${E('Estado actual',d.estado_actual)}${E('Subarriendo',d.subarriendo)}</table>`;
+  }
+  if(inc('ch-notas')){
+    const notas = notasStore[d.ua]||[];
+    const comms = commsStore[d.ua]||[];
+    const todos = [...notas.map(n=>({...n,_tipo:'nota'})),...comms.map(c=>({...c,_tipo:'comm'}))];
+    todos.sort((a,b)=>(a.fechaRaw||'').localeCompare(b.fechaRaw||''));
+    if(todos.length){
+      html+=`<div class="pt-sec">NOTAS Y COMUNICACIONES</div>`;
+      todos.forEach(e=>{
+        const tconf = tipoConf[e.tipo]||tipoConf.nota;
+        const label = e._tipo==='nota' ? '📝 Nota' : (tconf.icon+' '+tconf.label);
+        html+=`<div class="pt-entry"><div class="pt-entry-meta">${label} · ${e.fecha||'Sin fecha'}</div><div class="pt-entry-text">${e.texto}</div>`;
+        const fotos = e.fotos||[];
+        if(fotos.length) html+=`<div class="pt-fotos">${fotos.map(f=>`<img src="${f.dataUrl}" class="pt-foto">`).join('')}</div>`;
+        html+='</div>';
+      });
+    }
+  }
+  if(inc('ch-plano')){
+    const url = planoStore[d.ua];
+    if(url) html+=`<div class="pt-sec">PLANO</div><img src="${url}" style="max-width:100%;border-radius:6px;margin-top:8px">`;
+  }
+  if(inc('ch-tecnica')){
+    const t = tecnicaStore[d.ua]||{};
+    const filas = TECNICA_CAMPOS.filter(f=>t[f.k]).map(f=>E(f.label,t[f.k])).join('');
+    if(filas) html+=`<table class="pt">${S('FICHA TÉCNICA')}${filas}</table>`;
+  }
+
+  html+=`<div class="print-foot"><span>Generado el ${new Date().toLocaleDateString('es-ES')}</span><span>Arrendapro</span></div></div>`;
+  document.getElementById('print-content').outerHTML = html;
+  document.getElementById('modal-informe').style.display='none';
+  document.getElementById('print-overlay').classList.add('vis');
+}
+
+function hidePrint(){
+  document.getElementById('print-overlay').classList.remove('vis');
+  document.body.style.overflow='';
+}
+
+// --- BBDD: CAMPOS ESPERADOS (nombre en Excel → clave interna) ---
+const CAMPOS_ESPERADOS = {
+  'Arrendatario Actual': 'arrendatario',
+  'NIF': 'nif', 'Teléfono': 'telefono', 'mail': 'mail',
+  'Uso': 'uso', 'F. Inicio': 'f_inicio',
+  'Contracte': 'contracte', 'Coste Servicios Contrato': 'cs_contrato',
+  'Tipo fin': 'tipo_fin', 'Fecha Fin': 'fecha_fin',
+  'Preaviso Fin': 'preaviso_fin',
+  'Tipo revisión': 'tipo_revision', 'Fecha revisión renta': 'fecha_revision_renta',
+  'Fi. Incasol': 'fi_incasol', 'Fianza Adicional': 'fianza_adicional', 'Fi.Importe': 'fi_importe',
+  'Vía': 'via_cobro',
+  'Clausula repercusión de gastos': 'cl_repercusion',
+  'Gastos \nEscalera Cto': 'cl_escalera', 'Luz Escalera Cto': 'cl_luz_escalera',
+  'Tasas': 'cl_tasas', 'Impuestos\nIBI Cto': 'cl_ibi',
+  'Coste Servicios \nAgua Cto': 'cl_agua', 'electrodomésticos\nCto': 'cl_electrodomesticos',
+  'Revisión Caldera\nCto': 'cl_caldera', 'Seguro Clausula\nCto': 'cl_seguro',
+  'REF': 'ref', 'PISO': 'piso', 'Puerta': 'puerta', 'Municipio': 'municipio',
+  'Dirección': 'direccion', 'Portal': 'portal',
+  'm2 Adoptada': 'm2_adoptada', 'm2 Alquilable': 'm2_alquilable',
+  'Precio m2 Alquilable': 'precio_m2_alquilable', 'Const. Proy\nm2': 'const_proym2',
+  'Registro CEE': 'registro_cee', 'Calif.': 'calif_cee', 'Fecha fin CEE': 'fecha_fin_cee',
+  'Numero Cedula': 'num_cedula', 'Estado actual': 'estado_actual', 'Subarriendo': 'subarriendo',
+  'BI': 'bi', '%IVA': 'pct_iva',
+};
+
+function abrirModalBBDD(){
+  const m = document.getElementById('modal-bbdd');
+  m.style.display = 'flex';
+  m.style.alignItems = 'center';
+  m.style.justifyContent = 'center';
+  document.getElementById('bbdd-resultado').innerHTML = '';
+  document.getElementById('bbdd-input').value = '';
+}
+function cerrarModalBBDD(){
+  document.getElementById('modal-bbdd').style.display = 'none';
+}
+
+function procesarBBDD(){
+  const file = document.getElementById('bbdd-input').files[0];
+  if(!file){ alert('Selecciona un archivo Excel primero.'); return; }
+  const res = document.getElementById('bbdd-resultado');
+  res.innerHTML = '<span style="color:#6366f1">⏳ Leyendo archivo...</span>';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      const ws = wb.Sheets['BD Contratos'];
+      if(!ws){ res.innerHTML = '<span style="color:#dc2626">❌ No se encontró la hoja "BD Contratos".</span>'; return; }
+
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+      // Fila 4 = índice 3
+      const header = rows[3].map(h => h ? String(h).trim() : null);
+
+      // Validar campos esperados
+      const faltantes = [];
+      const idx = {};
+      for(const [nombre, clave] of Object.entries(CAMPOS_ESPERADOS)){
+        const i = header.indexOf(nombre);
+        if(i === -1) faltantes.push(nombre);
+        else idx[clave] = i;
+      }
+
+      if(faltantes.length){
+        res.innerHTML = `<span style="color:#d97706">⚠️ ${faltantes.length} campo(s) no encontrado(s):<br><small>${faltantes.join(', ')}</small><br><br>¿Continuar igualmente?</span>
+          <br><button class="btn-save" style="margin-top:10px;font-size:12px" onclick="cargarDatos(window._bbddRows, window._bbddIdx)">Continuar de todas formas</button>`;
+        window._bbddRows = rows;
+        window._bbddIdx = idx;
+        return;
+      }
+
+      cargarDatos(rows, idx);
+    } catch(err){
+      res.innerHTML = `<span style="color:#dc2626">❌ Error al leer el archivo: ${err.message}</span>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function cargarDatos(rows, idx){
+  const res = document.getElementById('bbdd-resultado');
+  const fdate = v => { if(!v) return null; if(v instanceof Date) return v.toLocaleDateString('es-ES'); return String(v).trim()||null; };
+  const fnum  = v => { if(v===null||v===''||v===undefined) return null; const n=parseFloat(v); return isNaN(n)?null:Math.round(n*100)/100; };
+  const fstr  = v => { if(v===null||v===undefined||String(v).trim()==='') return null; return String(v).trim(); };
+  const i = idx;
+
+  const nuevos = [];
+  for(let r=5; r<rows.length; r++){
+    const row = rows[r];
+    if(!row || row[i.arrendatario] === null) continue;
+    // Filtrar solo ALQ — buscamos campo Ocupación (col ~63)
+    const ocup = row[63];
+    if(ocup !== 'ALQ') continue;
+
+    const ref = fstr(row[i.ref]);
+    const piso = row[i.piso];
+    const puerta = fstr(row[i.puerta]);
+    nuevos.push({
+      ua: String(r-4), ref, refua: `${ref}_${piso}_${puerta}`, uso: fstr(row[i.uso]),
+      direccion: fstr(row[i.direccion]), portal: fstr(row[i.portal]),
+      piso, puerta, municipio: fstr(row[i.municipio]),
+      arrendatario: fstr(row[i.arrendatario]), nif: fstr(row[i.nif]),
+      telefono: fstr(row[i.telefono]), mail: fstr(row[i.mail]),
+      tipo_contrato: fstr(row[i.uso]), f_inicio: fdate(row[i.f_inicio]),
+      contracte: fnum(row[i.contracte]), cs_contrato: fnum(row[i.cs_contrato]),
+      tipo_fin: fstr(row[i.tipo_fin]), fecha_fin: fdate(row[i.fecha_fin]),
+      preaviso_fin: fstr(row[i.preaviso_fin]),
+      tipo_revision: fstr(row[i.tipo_revision]), fecha_revision_renta: fdate(row[i.fecha_revision_renta]),
+      fi_incasol: fnum(row[i.fi_incasol]), fianza_adicional: fnum(row[i.fianza_adicional]),
+      fi_importe: fnum(row[i.fi_importe]), via_cobro: fstr(row[i.via_cobro]),
+      cl_repercusion: fstr(row[i.cl_repercusion]), cl_escalera: fstr(row[i.cl_escalera]),
+      cl_luz_escalera: fstr(row[i.cl_luz_escalera]), cl_tasas: fstr(row[i.cl_tasas]),
+      cl_ibi: fstr(row[i.cl_ibi]), cl_agua: fstr(row[i.cl_agua]),
+      cl_electrodomesticos: fstr(row[i.cl_electrodomesticos]), cl_caldera: fstr(row[i.cl_caldera]),
+      cl_seguro: fstr(row[i.cl_seguro]),
+      m2_adoptada: fnum(row[i.m2_adoptada]), m2_alquilable: fnum(row[i.m2_alquilable]),
+      precio_m2_alquilable: fnum(row[i.precio_m2_alquilable]), const_proym2: fnum(row[i.const_proym2]),
+      registro_cee: fstr(row[i.registro_cee]), calif_cee: fstr(row[i.calif_cee]),
+      fecha_fin_cee: fdate(row[i.fecha_fin_cee]), num_cedula: fstr(row[i.num_cedula]),
+      estado_actual: fstr(row[i.estado_actual]), subarriendo: fstr(row[i.subarriendo]),
+      bi: fnum(row[i.bi]), pct_iva: fnum(row[i.pct_iva]),
+    });
+  }
+
+  // Actualizar DATA global
+  DATA.length = 0;
+  nuevos.forEach(d => DATA.push(d));
+  renderStats();
+  renderLista();
+  res.innerHTML = `<span style="color:#16a34a">✅ Base de datos actualizada: <strong>${nuevos.length} unidades ALQ</strong> cargadas.</span>`;
+  setTimeout(cerrarModalBBDD, 2000);
+}
+
+// --- FOTOS CLAUSULAS ---
+function onFotosClausulas(ev){
+  const files = Array.from(ev.target.files||[]);
+  if(!clausulasFotosStore[inquilino.ua]) clausulasFotosStore[inquilino.ua]=[];
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      clausulasFotosStore[inquilino.ua].push({id:newId(), dataUrl:e.target.result});
+      renderFotosClausulas();
+    };
+    reader.readAsDataURL(file);
+  });
+  ev.target.value='';
+}
+
+function renderFotosClausulas(){
+  if(!inquilino) return;
+  const fotos = clausulasFotosStore[inquilino.ua]||[];
+  document.getElementById('cl-fotos-preview').innerHTML = fotos.map(f=>
+    `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFotoClausula('${f.id}')">✕</button></span>`
+  ).join('');
+}
+
+function quitarFotoClausula(id){
+  if(!confirm('¿Eliminar esta foto?')) return;
+  clausulasFotosStore[inquilino.ua] = (clausulasFotosStore[inquilino.ua]||[]).filter(f=>f.id!==id);
+  renderFotosClausulas();
+}
+
+// --- DOCUMENTOS ---
+const docsStore = {};
+let editingDocId = null;
+
+function renderDocs(){
+  if(!inquilino) return;
+  const docs = docsStore[inquilino.ua]||[];
+  const list = document.getElementById('doc-list');
+  if(!docs.length){
+    list.innerHTML='<div class="ua-empty"><div class="ico">📄</div><p>Sin documentos enlazados todavía.</p></div>';
+    return;
+  }
+  list.innerHTML = docs.map(doc=>`
+    <div class="doc-item" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--slate-50);border-radius:10px;margin-bottom:7px">
+      <span style="font-size:22px">📄</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${doc.nombre}</div>
+        <div style="font-size:11px;color:var(--slate-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${doc.url}</div>
+      </div>
+      <a href="${doc.url}" target="_blank" class="btn-save" style="font-size:11px;padding:5px 10px;white-space:nowrap;text-decoration:none">Abrir</a>
+      <button class="btn-link" onclick="editarDoc('${doc.id}')">✏️</button>
+      <button class="btn-link danger" onclick="borrarDoc('${doc.id}')">🗑️</button>
+    </div>`
+  ).join('');
+}
+
+function toggleDocForm(){
+  document.getElementById('doc-form').classList.toggle('vis');
+  if(!document.getElementById('doc-form').classList.contains('vis')){
+    editingDocId=null;
+    document.getElementById('doc-nombre').value='';
+    document.getElementById('doc-url').value='';
+  }
+}
+
+function guardarDoc(){
+  if(!inquilino) return;
+  const nombre = document.getElementById('doc-nombre').value.trim();
+  const url = document.getElementById('doc-url').value.trim();
+  if(!nombre||!url){alert('Rellena nombre y enlace.');return;}
+  if(!docsStore[inquilino.ua]) docsStore[inquilino.ua]=[];
+  if(editingDocId){
+    const d = docsStore[inquilino.ua].find(x=>x.id===editingDocId);
+    if(d){d.nombre=nombre;d.url=url;}
+  } else {
+    docsStore[inquilino.ua].push({id:newId(),nombre,url});
+  }
+  toggleDocForm();
+  renderDocs();
+}
+
+function editarDoc(id){
+  const doc = (docsStore[inquilino.ua]||[]).find(x=>x.id===id);
+  if(!doc) return;
+  editingDocId=id;
+  document.getElementById('doc-nombre').value=doc.nombre;
+  document.getElementById('doc-url').value=doc.url;
+  document.getElementById('doc-form').classList.add('vis');
+}
+
+function borrarDoc(id){
+  if(!confirm('¿Eliminar este documento?')) return;
+  docsStore[inquilino.ua]=(docsStore[inquilino.ua]||[]).filter(x=>x.id!==id);
+  renderDocs();
+}
+
+// INIT
+renderStats();
+renderLista();
+</script>
+</body>
+</html>
