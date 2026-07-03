@@ -1270,28 +1270,34 @@ function hidePrint(){
 }
 
 // --- BBDD: CAMPOS ESPERADOS (nombre en Excel → clave interna) ---
+// Índices fijos de columnas en BD Contratos (fila 4, base 0)
+// Verificados directamente del Excel BBDD_2026_MB_.xlsx
+const COL = {
+  ua:0, ref:1, municipio:2, piso:9, puerta:10,
+  registro_cee:11, calif_cee:12, fecha_fin_cee:14,
+  num_cedula:16, chb_caducidad:18,
+  direccion:6, portal:7,
+  const_proym2:44, m2_alquilable:48, m2_adoptada:49, precio_m2_alquilable:50,
+  estado_actual:57, subarriendo:61, ocupacion:63,
+  uso:65, nif:67, telefono:68, mail:69, arrendatario:71,
+  f_inicio:79, tipo_fin:93, preaviso_fin:94, fecha_fin:95,
+  fi_incasol:97, fianza_adicional:103, fi_importe:104,
+  fecha_revision_renta:105, tipo_revision:106,
+  cl_repercusion:107, cl_escalera:108, cl_luz_escalera:109,
+  cl_tasas:110, cl_ibi:111, cl_agua:112,
+  cl_electrodomesticos:113, cl_caldera:114, cl_seguro:115,
+  contracte:116, cs_contrato:122,
+  bi:135, pct_iva:136, via_cobro:139,
+};
+// CAMPOS_ESPERADOS solo para validación visual (nombres reales del Excel)
 const CAMPOS_ESPERADOS = {
-  'Arrendatario Actual': 'arrendatario',
-  'NIF': 'nif', 'Teléfono': 'telefono', 'mail': 'mail',
-  'Uso': 'uso', 'F. Inicio': 'f_inicio',
-  'Contracte': 'contracte', 'Coste Servicios Contrato': 'cs_contrato',
-  'Tipo fin': 'tipo_fin', 'Fecha Fin': 'fecha_fin',
-  'Preaviso Fin': 'preaviso_fin',
-  'Tipo revisión': 'tipo_revision', 'Fecha revisión renta': 'fecha_revision_renta',
-  'Fi. Incasol': 'fi_incasol', 'Fianza Adicional': 'fianza_adicional', 'Fi.Importe': 'fi_importe',
-  'Vía': 'via_cobro',
-  'Clausula repercusión de gastos': 'cl_repercusion',
-  'Gastos \nEscalera Cto': 'cl_escalera', 'Luz Escalera Cto': 'cl_luz_escalera',
-  'Tasas': 'cl_tasas', 'Impuestos\nIBI Cto': 'cl_ibi',
-  'Coste Servicios \nAgua Cto': 'cl_agua', 'electrodomésticos\nCto': 'cl_electrodomesticos',
-  'Revisión Caldera\nCto': 'cl_caldera', 'Seguro Clausula\nCto': 'cl_seguro',
-  'REF': 'ref', 'PISO': 'piso', 'Puerta': 'puerta', 'Municipio': 'municipio',
-  'Dirección': 'direccion', 'Portal': 'portal',
-  'm2 Adoptada': 'm2_adoptada', 'm2 Alquilable': 'm2_alquilable',
-  'Precio m2 Alquilable': 'precio_m2_alquilable', 'Const. Proy\nm2': 'const_proym2',
-  'Registro CEE': 'registro_cee', 'Calif.': 'calif_cee', 'Fecha fin CEE': 'fecha_fin_cee',
-  'Numero Cedula': 'num_cedula', 'Estado actual': 'estado_actual', 'Subarriendo': 'subarriendo',
-  'BI': 'bi', '%IVA': 'pct_iva',
+  'Arrendatario Actual':'arrendatario','NIF':'nif','Teléfono':'telefono','mail':'mail',
+  'Uso':'uso','F. Inicio':'f_inicio','Contracte':'contracte',
+  'Tipo fin':'tipo_fin','Fecha Fin':'fecha_fin','Preaviso Fin':'preaviso_fin',
+  'Fi. Incasol':'fi_incasol','Fianza Adicional':'fianza_adicional','Fi.Importe':'fi_importe',
+  'Ref':'ref','Piso':'piso','Puerta':'puerta','Municipio':'municipio',
+  'Dirección':'direccion','Portal':'portal',
+  'BI':'bi','%IVA':'pct_iva',
 };
 
 function abrirModalBBDD(){
@@ -1356,46 +1362,53 @@ function procesarBBDD(){
 
 function cargarDatos(rows, idx){
   const res = document.getElementById('bbdd-resultado');
-  const fdate = v => { if(!v) return null; if(v instanceof Date) return v.toLocaleDateString('es-ES'); return String(v).trim()||null; };
-  const fnum  = v => { if(v===null||v===''||v===undefined) return null; const n=parseFloat(v); return isNaN(n)?null:Math.round(n*100)/100; };
-  const fstr  = v => { if(v===null||v===undefined||String(v).trim()==='') return null; return String(v).trim(); };
-  const i = idx;
+  const fdate = v => {
+    if(!v) return null;
+    if(v instanceof Date) return v.toLocaleDateString('es-ES');
+    const s = String(v).trim();
+    // Si viene como datetime string tipo "2026-12-30T00:00:00" o similar
+    if(/^\d{4}-\d{2}-\d{2}/.test(s)){
+      const d = new Date(s);
+      if(!isNaN(d)) return d.toLocaleDateString('es-ES');
+    }
+    return s||null;
+  };
+  const fnum = v => { if(v===null||v===''||v===undefined) return null; const n=parseFloat(v); return isNaN(n)?null:Math.round(n*100)/100; };
+  const fstr = v => { if(v===null||v===undefined||String(v).trim()==='') return null; return String(v).trim(); };
 
   const nuevos = [];
   for(let r=5; r<rows.length; r++){
     const row = rows[r];
-    if(!row || row[i.arrendatario] === null) continue;
-    // Filtrar solo ALQ — buscamos campo Ocupación (col ~63)
-    const ocup = row[63];
-    if(ocup !== 'ALQ') continue;
-
-    const ref = fstr(row[i.ref]);
-    const piso = row[i.piso];
-    const puerta = fstr(row[i.puerta]);
+    if(!row || !row[COL.arrendatario]) continue;
+    if(row[COL.ocupacion] !== 'ALQ') continue;
+    const ref = fstr(row[COL.ref]);
+    const piso = row[COL.piso];
+    const puerta = fstr(row[COL.puerta]);
     nuevos.push({
-      ua: String(r-4), ref, refua: `${ref}_${piso}_${puerta}`, uso: fstr(row[i.uso]),
-      direccion: fstr(row[i.direccion]), portal: fstr(row[i.portal]),
-      piso, puerta, municipio: fstr(row[i.municipio]),
-      arrendatario: fstr(row[i.arrendatario]), nif: fstr(row[i.nif]),
-      telefono: fstr(row[i.telefono]), mail: fstr(row[i.mail]),
-      tipo_contrato: fstr(row[i.uso]), f_inicio: fdate(row[i.f_inicio]),
-      contracte: fnum(row[i.contracte]), cs_contrato: fnum(row[i.cs_contrato]),
-      tipo_fin: fstr(row[i.tipo_fin]), fecha_fin: fdate(row[i.fecha_fin]),
-      preaviso_fin: fstr(row[i.preaviso_fin]),
-      tipo_revision: fstr(row[i.tipo_revision]), fecha_revision_renta: fdate(row[i.fecha_revision_renta]),
-      fi_incasol: fnum(row[i.fi_incasol]), fianza_adicional: fnum(row[i.fianza_adicional]),
-      fi_importe: fnum(row[i.fi_importe]), via_cobro: fstr(row[i.via_cobro]),
-      cl_repercusion: fstr(row[i.cl_repercusion]), cl_escalera: fstr(row[i.cl_escalera]),
-      cl_luz_escalera: fstr(row[i.cl_luz_escalera]), cl_tasas: fstr(row[i.cl_tasas]),
-      cl_ibi: fstr(row[i.cl_ibi]), cl_agua: fstr(row[i.cl_agua]),
-      cl_electrodomesticos: fstr(row[i.cl_electrodomesticos]), cl_caldera: fstr(row[i.cl_caldera]),
-      cl_seguro: fstr(row[i.cl_seguro]),
-      m2_adoptada: fnum(row[i.m2_adoptada]), m2_alquilable: fnum(row[i.m2_alquilable]),
-      precio_m2_alquilable: fnum(row[i.precio_m2_alquilable]), const_proym2: fnum(row[i.const_proym2]),
-      registro_cee: fstr(row[i.registro_cee]), calif_cee: fstr(row[i.calif_cee]),
-      fecha_fin_cee: fdate(row[i.fecha_fin_cee]), num_cedula: fstr(row[i.num_cedula]),
-      estado_actual: fstr(row[i.estado_actual]), subarriendo: fstr(row[i.subarriendo]),
-      bi: fnum(row[i.bi]), pct_iva: fnum(row[i.pct_iva]),
+      ua: String(r-4), ref, refua: `${ref}_${piso}_${puerta}`, uso: fstr(row[COL.uso]),
+      direccion: fstr(row[COL.direccion]), portal: fstr(row[COL.portal]),
+      piso, puerta, municipio: fstr(row[COL.municipio]),
+      arrendatario: fstr(row[COL.arrendatario]), nif: fstr(row[COL.nif]),
+      telefono: fstr(row[COL.telefono]), mail: fstr(row[COL.mail]),
+      tipo_contrato: fstr(row[COL.uso]), f_inicio: fdate(row[COL.f_inicio]),
+      contracte: fnum(row[COL.contracte]), cs_contrato: fnum(row[COL.cs_contrato]),
+      tipo_fin: fstr(row[COL.tipo_fin]), fecha_fin: fdate(row[COL.fecha_fin]),
+      preaviso_fin: fdate(row[COL.preaviso_fin]),
+      tipo_revision: fstr(row[COL.tipo_revision]), fecha_revision_renta: fdate(row[COL.fecha_revision_renta]),
+      fi_incasol: fnum(row[COL.fi_incasol]), fianza_adicional: fnum(row[COL.fianza_adicional]),
+      fi_importe: fnum(row[COL.fi_importe]), via_cobro: fstr(row[COL.via_cobro]),
+      cl_repercusion: fstr(row[COL.cl_repercusion]), cl_escalera: fstr(row[COL.cl_escalera]),
+      cl_luz_escalera: fstr(row[COL.cl_luz_escalera]), cl_tasas: fstr(row[COL.cl_tasas]),
+      cl_ibi: fstr(row[COL.cl_ibi]), cl_agua: fstr(row[COL.cl_agua]),
+      cl_electrodomesticos: fstr(row[COL.cl_electrodomesticos]), cl_caldera: fstr(row[COL.cl_caldera]),
+      cl_seguro: fstr(row[COL.cl_seguro]),
+      m2_adoptada: fnum(row[COL.m2_adoptada]), m2_alquilable: fnum(row[COL.m2_alquilable]),
+      precio_m2_alquilable: fnum(row[COL.precio_m2_alquilable]), const_proym2: fnum(row[COL.const_proym2]),
+      registro_cee: fstr(row[COL.registro_cee]), calif_cee: fstr(row[COL.calif_cee]),
+      fecha_fin_cee: fdate(row[COL.fecha_fin_cee]), num_cedula: fstr(row[COL.num_cedula]),
+      chb_caducidad: fdate(row[COL.chb_caducidad]),
+      estado_actual: fstr(row[COL.estado_actual]), subarriendo: fstr(row[COL.subarriendo]),
+      bi: fnum(row[COL.bi]), pct_iva: fnum(row[COL.pct_iva]),
     });
   }
 
