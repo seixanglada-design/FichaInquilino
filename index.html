@@ -570,7 +570,7 @@ let msalAccount = null;
 let msalToken = null;
 
 async function initMSAL(){
-  await msalApp.initialize();
+  // MSAL Browser 2.38.3 no necesita initialize()
   // Manejar redirect de vuelta
   try {
     const resp = await msalApp.handleRedirectPromise();
