@@ -232,6 +232,7 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
 .pt-foto{width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
 </head>
 <body>
 
@@ -564,12 +565,11 @@ const MSAL_CONFIG = {
   cache: { cacheLocation: 'sessionStorage' }
 };
 const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
-let msalApp = null;
+const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
 let msalAccount = null;
 let msalToken = null;
 
 async function initMSAL(){
-  msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
   await msalApp.initialize();
   // Manejar redirect de vuelta
   try {
@@ -1270,45 +1270,34 @@ function hidePrint(){
 }
 
 // --- BBDD: CAMPOS ESPERADOS (nombre en Excel → clave interna) ---
-// Nombres exactos de columnas del Excel → clave interna
-// Algunos nombres tienen saltos de linea reales (\n) dentro de las celdas del Excel
-const CAMPOS_EXCEL = {
-  'UA':'ua','Ref':'ref','Municipio':'municipio','Dirección':'direccion','Portal':'portal',
-  'Piso':'piso','Puerta':'puerta',
-  'Registro CEE':'registro_cee','Calif.':'calif_cee','Fecha fin CEE':'fecha_fin_cee',
-  'Nº Cédula':'num_cedula','CHB Caducidad':'chb_caducidad',
-  'Const. Proy\nm2':'const_proym2','m2\nAlquilable':'m2_alquilable',
-  'm2\nAdoptada':'m2_adoptada','Precio m2\nAlquilable':'precio_m2_alquilable',
-  'Estado actual':'estado_actual','Subarriendo':'subarriendo','Ocupación':'ocupacion',
-  'Uso':'uso','NIF':'nif','Teléfono':'telefono','mail':'mail',
-  'Arrendatario Actual':'arrendatario','F. Inicio':'f_inicio',
-  'Tipo fin':'tipo_fin','Preaviso Fin':'preaviso_fin','Fecha Fin':'fecha_fin',
-  'Fi. Incasol':'fi_incasol','Fianza Adicional':'fianza_adicional','Fi.Importe':'fi_importe',
-  'Fecha revisión renta':'fecha_revision_renta','Tipo revisión':'tipo_revision',
-  'Clausula repercusión de gastos':'cl_repercusion',
-  'Gastos Escalera Cto':'cl_escalera','Luz Escalera Cto':'cl_luz_escalera',
-  'Tasas':'cl_tasas','Impuestos IBI Cto':'cl_ibi',
-  'Coste Servicios Agua Cto':'cl_agua','electrodomésticos Cto':'cl_electrodomesticos',
-  'Revisión Caldera Cto':'cl_caldera','Seguro Clausula Cto':'cl_seguro',
-  'Renta contrato':'contracte','Coste Servicios Contrato':'cs_contrato',
-  'BI':'bi','%IVA':'pct_iva','Vía':'via_cobro',
+// Índices fijos de columnas en BD Contratos (fila 4, base 0)
+// Verificados directamente del Excel BBDD_2026_MB_.xlsx
+const COL = {
+  ua:0, ref:1, municipio:2, piso:9, puerta:10,
+  registro_cee:11, calif_cee:12, fecha_fin_cee:14,
+  num_cedula:16, chb_caducidad:18,
+  direccion:6, portal:7,
+  const_proym2:44, m2_alquilable:48, m2_adoptada:49, precio_m2_alquilable:50,
+  estado_actual:57, subarriendo:61, ocupacion:63,
+  uso:65, nif:67, telefono:68, mail:69, arrendatario:71,
+  f_inicio:79, tipo_fin:93, preaviso_fin:94, fecha_fin:95,
+  fi_incasol:97, fianza_adicional:103, fi_importe:104,
+  fecha_revision_renta:105, tipo_revision:106,
+  cl_repercusion:107, cl_escalera:108, cl_luz_escalera:109,
+  cl_tasas:110, cl_ibi:111, cl_agua:112,
+  cl_electrodomesticos:113, cl_caldera:114, cl_seguro:115,
+  contracte:116, cs_contrato:122,
+  bi:135, pct_iva:136, via_cobro:139,
 };
-
-// Normaliza un nombre de cabecera: quita saltos de línea, espacios extra, lowercase, sin acentos
-const normH = s => s ? s.replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim()
-  .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
-
-// Índices de fallback (por si algún nombre no se encuentra)
-const COL_FALLBACK = {
-  ua:0,ref:1,municipio:2,direccion:6,portal:7,piso:9,puerta:10,
-  registro_cee:11,calif_cee:12,fecha_fin_cee:14,num_cedula:16,chb_caducidad:18,
-  const_proym2:44,m2_alquilable:48,m2_adoptada:49,precio_m2_alquilable:50,
-  estado_actual:57,subarriendo:61,ocupacion:63,uso:65,nif:67,telefono:68,
-  mail:69,arrendatario:71,f_inicio:79,tipo_fin:93,preaviso_fin:94,fecha_fin:95,
-  fi_incasol:97,fianza_adicional:103,fi_importe:104,fecha_revision_renta:105,
-  tipo_revision:106,cl_repercusion:107,cl_escalera:108,cl_luz_escalera:109,
-  cl_tasas:110,cl_ibi:111,cl_agua:112,cl_electrodomesticos:113,cl_caldera:114,
-  cl_seguro:115,contracte:116,cs_contrato:122,bi:135,pct_iva:136,via_cobro:139,
+// CAMPOS_ESPERADOS solo para validación visual (nombres reales del Excel)
+const CAMPOS_ESPERADOS = {
+  'Arrendatario Actual':'arrendatario','NIF':'nif','Teléfono':'telefono','mail':'mail',
+  'Uso':'uso','F. Inicio':'f_inicio','Contracte':'contracte',
+  'Tipo fin':'tipo_fin','Fecha Fin':'fecha_fin','Preaviso Fin':'preaviso_fin',
+  'Fi. Incasol':'fi_incasol','Fianza Adicional':'fianza_adicional','Fi.Importe':'fi_importe',
+  'Ref':'ref','Piso':'piso','Puerta':'puerta','Municipio':'municipio',
+  'Dirección':'direccion','Portal':'portal',
+  'BI':'bi','%IVA':'pct_iva',
 };
 
 function abrirModalBBDD(){
@@ -1340,30 +1329,30 @@ function procesarBBDD(){
       // Fila 4 = índice 3
       const header = rows[3].map(h => h ? String(h).trim() : null);
 
-      // Construir índices dinámicamente buscando por nombre normalizado
-      const headerNorm = header.map(normH);
-      const COL = {};
-      const noEncontrados = [];
-      for(const [nombre, clave] of Object.entries(CAMPOS_EXCEL)){
-        const i = headerNorm.indexOf(normH(nombre));
-        if(i === -1){
-          // Usar fallback si existe
-          if(COL_FALLBACK[clave] !== undefined) COL[clave] = COL_FALLBACK[clave];
-          else noEncontrados.push(nombre);
-        } else {
-          COL[clave] = i;
-        }
+      // Normalizar cabecera: sin saltos de línea, sin acentos, lowercase, sin espacios extra
+      const norm = s => s ? s.replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
+      const headerNorm = header.map(norm);
+
+      // Validar campos esperados con búsqueda flexible
+      const faltantes = [];
+      const idx = {};
+      for(const [nombre, clave] of Object.entries(CAMPOS_ESPERADOS)){
+        const nombreNorm = norm(nombre);
+        const i = headerNorm.indexOf(nombreNorm);
+        if(i === -1) faltantes.push(nombre);
+        else idx[clave] = i;
       }
 
-      if(noEncontrados.length){
-        res.innerHTML = `<span style="color:#d97706">⚠️ ${noEncontrados.length} campo(s) no encontrado(s) ni en fallback:<br><small>${noEncontrados.join(', ')}</small></span>
-          <br><button class="btn-save" style="margin-top:10px;font-size:12px" onclick="cargarDatos(window._bbddRows, window._bbddCOL)">Continuar de todas formas</button>`;
+      if(faltantes.length){
+        res.innerHTML = `<span style="color:#d97706">⚠️ ${faltantes.length} campo(s) no encontrado(s):<br><small>${faltantes.join(', ')}</small><br><br>¿Continuar igualmente?</span>
+          <br><button class="btn-save" style="margin-top:10px;font-size:12px" onclick="cargarDatos(window._bbddRows, window._bbddIdx)">Continuar de todas formas</button>`;
         window._bbddRows = rows;
-        window._bbddCOL = COL;
+        window._bbddIdx = idx;
         return;
       }
 
-      cargarDatos(rows, COL);
+      cargarDatos(rows, idx);
     } catch(err){
       res.innerHTML = `<span style="color:#dc2626">❌ Error al leer el archivo: ${err.message}</span>`;
     }
@@ -1371,7 +1360,7 @@ function procesarBBDD(){
   reader.readAsArrayBuffer(file);
 }
 
-function cargarDatos(rows, COL){
+function cargarDatos(rows, idx){
   const res = document.getElementById('bbdd-resultado');
   const fdate = v => {
     if(!v) return null;
@@ -1527,10 +1516,9 @@ function borrarDoc(id){
   renderDocs();
 }
 
-// INIT - esperar a que MSAL esté cargado
-window.addEventListener('DOMContentLoaded', initMSAL);
+// INIT
+initMSAL();
 </script>
 </div><!-- /screen-main -->
-<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
 </body>
 </html>
