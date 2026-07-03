@@ -559,15 +559,34 @@ const DATA = [{"ua": "1", "ref": "ROS", "refua": "ROS_0_2B-izda", "uso": "Local"
 const MSAL_CONFIG = {
   auth: {
     clientId: 'c9b5a5fb-ceb0-4d42-b385-b27e71f35c8f',
-    authority: 'https://login.microsoftonline.com/ad906e1f-801f-4350-9dd8-c8a62a189ccb',
-    redirectUri: 'https://seixanglada-design.github.io/FichaInquilino/'
+    authority: 'https://login.microsoftonline.com/ad906e1f-801f-4350-9dd6-ca62a189ccb',
+    redirectUri: 'https://seixanglada-design.github.io/FichaInquilino/',
+    navigateToLoginRequestUrl: false
   },
-  cache: { cacheLocation: 'sessionStorage' }
+  cache: {
+    cacheLocation: 'sessionStorage',
+    storeAuthStateInCookie: true
+  }
 };
 const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
 const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
 let msalAccount = null;
 let msalToken = null;
+
+function showAuthError(err){
+  console.error('MSAL auth error:', err);
+  const login = document.getElementById('screen-login');
+  if(!login) return;
+  let box = document.getElementById('auth-error');
+  if(!box){
+    box = document.createElement('div');
+    box.id = 'auth-error';
+    box.style.cssText = 'max-width:520px;margin:8px auto 0;padding:12px 14px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:12px;line-height:1.45;text-align:left';
+    login.querySelector('div').appendChild(box);
+  }
+  const msg = err && (err.errorMessage || err.message || String(err));
+  box.textContent = 'No se pudo iniciar sesión con Microsoft. Revisa en Azure que exista este Redirect URI en Single-page application (SPA): https://seixanglada-design.github.io/FichaInquilino/. Detalle: ' + (msg || 'error desconocido');
+}
 
 async function initMSAL(){
   // MSAL Browser 2.38.3 no necesita initialize()
@@ -580,8 +599,13 @@ async function initMSAL(){
   const accounts = msalApp.getAllAccounts();
   if(accounts.length > 0){
     msalAccount = accounts[0];
-    await refreshToken();
-    showApp();
+    try {
+      await refreshToken();
+      showApp();
+    } catch(e){
+      showLogin();
+      showAuthError(e);
+    }
   } else {
     showLogin();
   }
@@ -593,7 +617,7 @@ async function refreshToken(){
     msalToken = resp.accessToken;
   } catch(e){
     // Silent fail → redirect login
-    msalApp.acquireTokenRedirect({scopes: GRAPH_SCOPES});
+    return msalApp.acquireTokenRedirect({scopes: GRAPH_SCOPES});
   }
 }
 
@@ -610,12 +634,15 @@ function showApp(){
 }
 
 function loginMicrosoft(){
-  msalApp.loginRedirect({scopes: GRAPH_SCOPES});
+  msalApp.loginRedirect({scopes: GRAPH_SCOPES}).catch(showAuthError);
 }
 
 function logout(){
   msalApp.logoutRedirect();
 }
+
+window.loginMicrosoft = loginMicrosoft;
+window.logout = logout;
 
 // --- UTILS ---
 const fmt = v => v ?? '—';
