@@ -210,8 +210,14 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
 }
 .foto-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .foto-thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--slate-200)}
+.foto-thumb{cursor:pointer}
+.foto-ph{width:64px;height:64px;border-radius:8px;border:1px solid var(--slate-200);background:var(--slate-50);display:inline-flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
 .foto-thumb-wrap{position:relative;display:inline-block}
 .foto-del{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;line-height:1;cursor:pointer}
+.od-row{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--slate-100);cursor:pointer;border-radius:8px}
+.od-row:hover{background:var(--indigo-bg)}
+.od-row .name{font-weight:600;font-size:13px;color:var(--slate-800)}
+.od-row .meta{font-size:11px;color:var(--slate-400)}
 .tl-actions{margin-top:8px;display:flex;gap:14px}
 .btn-link{background:none;border:none;color:var(--indigo,#4f46e5);font-size:12px;cursor:pointer;padding:0;font-family:inherit}
 .btn-link.danger{color:#dc2626}
@@ -230,6 +236,34 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
 .pt-entry-text{color:#1e293b}
 .pt-fotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .pt-foto{width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}
+.report-body{background:white;color:#111827}
+.report-head{display:flex;justify-content:space-between;gap:24px;border-bottom:3px solid #111827;padding-bottom:14px;margin-bottom:18px}
+.report-brand{font-family:'DM Serif Display',serif;font-weight:700;font-size:17px;margin-bottom:8px}
+.report-brand span{color:var(--indigo)}
+.report-head h1{font-family:'DM Serif Display',serif;font-size:26px;line-height:1.1;margin:0 0 5px}
+.report-head p{margin:0;color:var(--slate-500);font-size:12px}
+.report-date{font-size:11px;color:var(--slate-500);white-space:nowrap}
+.report-sec{break-inside:avoid;margin:0 0 16px}
+.report-sec h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate-700);background:var(--slate-100);padding:6px 8px;margin:0 0 8px}
+.report-table{width:100%;border-collapse:collapse;font-size:12px}
+.report-table td{padding:5px 7px;border-bottom:1px solid #eef2f7;vertical-align:top}
+.report-table .lbl{width:36%;font-weight:600;color:var(--slate-500)}
+.report-empty{font-size:12px;color:var(--slate-400);font-style:italic;margin:6px 8px}
+.report-entry{border-left:3px solid var(--slate-200);padding:8px 10px;margin:0 0 9px;font-size:12px;break-inside:avoid}
+.report-meta{font-size:11px;color:var(--slate-500);font-weight:700;margin-bottom:3px}
+.report-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.report-photo{width:100%;height:125px;object-fit:cover;border:1px solid var(--slate-200);border-radius:4px}
+.report-plan{max-width:100%;max-height:620px;object-fit:contain;border:1px solid var(--slate-200);border-radius:6px}
+.report-foot{display:flex;justify-content:space-between;border-top:1px solid var(--slate-200);margin-top:24px;padding-top:10px;font-size:10px;color:var(--slate-400)}
+@media print{
+  body{background:white!important}
+  body > *:not(#screen-main){display:none!important}
+  #screen-main > *:not(#print-overlay){display:none!important}
+  #print-overlay{display:block!important;position:static!important;inset:auto!important;background:white!important;overflow:visible!important;padding:0!important}
+  #print-overlay .print-doc{box-shadow:none!important;border-radius:0!important;max-width:none!important;width:100%!important}
+  #print-overlay .print-tb{display:none!important}
+  #print-overlay .print-cnt{padding:0!important}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
@@ -261,16 +295,17 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
 
 <!-- MODAL INFORME -->
 <div id="modal-informe" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:24px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+  <div style="background:white;border-radius:16px;padding:24px;width:90%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
     <div style="font-weight:700;font-size:16px;margin-bottom:14px">📄 Generar informe</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;font-size:14px">
       <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-datos" checked> Datos personales</label>
       <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-contrato" checked> Contrato</label>
-      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-clausulas" checked> Cláusulas del contrato</label>
+      <label style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span><input type="checkbox" id="ch-clausulas" checked> Cláusulas del contrato</span><small style="color:var(--slate-500)"><input type="checkbox" id="ch-clausulas-fotos"> fotos</small></label>
       <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-piso" checked> Datos del piso</label>
-      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-notas" checked> Notas y comunicaciones</label>
+      <label style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span><input type="checkbox" id="ch-notas" checked> Notas/Ocupación</span><small style="color:var(--slate-500)"><input type="checkbox" id="ch-notas-fotos"> fotos</small></label>
+      <label style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span><input type="checkbox" id="ch-comms" checked> Comunicaciones</span><small style="color:var(--slate-500)"><input type="checkbox" id="ch-comms-fotos"> fotos</small></label>
       <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-plano" checked> Plano</label>
-      <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ch-tecnica"> Ficha técnica</label>
+      <label style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span><input type="checkbox" id="ch-tecnica"> Ficha técnica</span><small style="color:var(--slate-500)"><input type="checkbox" id="ch-tecnica-fotos"> fotos</small></label>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button class="btn-cancel" onclick="cerrarInforme()">Cancelar</button>
@@ -491,6 +526,7 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
             <input type="url" id="od-link-input" placeholder="https://onedrive.live.com/...">
           </div>
           <div class="form-actions">
+            <button class="btn-cancel" onclick="abrirOneDrivePicker('folder','fotos')">Buscar carpeta en OneDrive</button>
             <button class="btn-save" onclick="guardarOdLink()">Guardar enlace</button>
           </div>
           <div id="od-link-view" style="margin-top:14px"></div>
@@ -526,6 +562,12 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
             <div class="fg"><label>Enlace OneDrive</label>
               <input type="url" id="doc-url" placeholder="https://onedrive.live.com/...">
             </div>
+            <div class="form-actions" style="justify-content:flex-start;margin-bottom:8px">
+              <button class="btn-cancel" onclick="abrirOneDrivePicker('any','documento')">Buscar en OneDrive</button>
+              <label class="btn-cancel" style="cursor:pointer">Subir documento
+                <input type="file" id="doc-file-input" onchange="subirDocumentoDesdeInput(event)" style="display:none">
+              </label>
+            </div>
             <div class="form-actions">
               <button class="btn-cancel" onclick="toggleDocForm()">Cancelar</button>
               <button class="btn-save" onclick="guardarDoc()">Guardar</button>
@@ -538,13 +580,42 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
   </div>
 </div>
 
+<!-- VISOR FOTO -->
+<div id="foto-viewer" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.88);z-index:10000;align-items:center;justify-content:center;padding:18px">
+  <button onclick="cerrarFotoViewer()" style="position:absolute;top:14px;right:14px;background:white;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer">Cerrar</button>
+  <img id="foto-viewer-img" src="" style="max-width:96vw;max-height:88vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:none">
+  <div id="foto-viewer-link" style="display:none;background:white;border-radius:12px;padding:22px;max-width:420px;text-align:center">
+    <div style="font-weight:700;margin-bottom:10px">Archivo en OneDrive</div>
+    <p style="color:var(--slate-500);font-size:13px;margin-bottom:14px">Este archivo está guardado en OneDrive.</p>
+    <a id="foto-viewer-a" href="#" target="_blank" class="btn-save" style="display:inline-block;text-decoration:none">Abrir en OneDrive</a>
+  </div>
+</div>
+
+<!-- SELECTOR ONEDRIVE -->
+<div id="od-picker" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:10000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:14px;width:96%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--slate-200);display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div>
+        <div style="font-weight:700">Seleccionar en OneDrive</div>
+        <div id="od-picker-path" style="font-size:12px;color:var(--slate-500);margin-top:2px">/</div>
+      </div>
+      <button class="btn-cancel" onclick="cerrarOneDrivePicker()">Cerrar</button>
+    </div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--slate-100);display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-cancel" onclick="odPickerSubir()">Subir</button>
+      <button class="btn-save" id="od-picker-use-folder" onclick="odPickerSeleccionarCarpetaActual()">Usar esta carpeta</button>
+    </div>
+    <div id="od-picker-list" style="overflow:auto;padding:8px 16px 16px;min-height:260px"></div>
+  </div>
+</div>
+
 <!-- PRINT -->
 <div class="print-overlay" id="print-overlay">
   <div class="print-doc">
     <div class="print-tb">
       <span>Vista previa de impresión</span>
       <div class="acts">
-        <button class="btn-h" onclick="window.print()">🖨 Imprimir / PDF</button>
+        <button class="btn-h" onclick="imprimirInforme()">🖨 Imprimir / PDF</button>
         <button class="btn-h" onclick="hidePrint()">✕ Cerrar</button>
       </div>
     </div>
@@ -564,7 +635,7 @@ const MSAL_CONFIG = {
     navigateToLoginRequestUrl: false
   },
   cache: {
-    cacheLocation: 'sessionStorage',
+    cacheLocation: 'localStorage',
     storeAuthStateInCookie: true
   }
 };
@@ -631,6 +702,7 @@ function showApp(){
   document.getElementById('screen-main').style.display = 'block';
   renderStats();
   renderLista();
+  cargarEstadoApp();
 }
 
 function loginMicrosoft(){
@@ -677,12 +749,381 @@ const tecnicaStore = {};
 const tecnicaFotosStore = {};
 const clausulasFotosStore = {};
 const oneDriveStore = {};
+const docsStore = {};
 let tempFotosComm = [];
 let tempFotosNota = [];
 let editingCommId = null;
 let editingNotaId = null;
 let uidCounter = 1;
 const newId = () => 'id'+(uidCounter++);
+const APP_ROOT = 'Apps/FichaInquilino';
+const APP_STATE_FILE = 'estado_app.json';
+const APP_DATA_FILE = 'inquilinos.json';
+let appStateLoaded = false;
+let saveStateTimer = null;
+
+const escHtml = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fileSrc = f => f && (f.dataUrl || f.src || f.url || f.webUrl || f.oneDriveUrl);
+const fileOpenUrl = f => f && (f.webUrl || f.oneDriveUrl || f.url || f.dataUrl || f.src);
+const slug = v => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\\/:*?"<>|#%{}~&]/g,'_').replace(/\s+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'') || 'archivo';
+const nowStamp = () => {
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+};
+
+function unidadFolder(){
+  if(!inquilino) return 'sin_unidad';
+  return slug(inquilino.refua || [inquilino.ref, inquilino.piso, inquilino.puerta].filter(v=>v!==null&&v!==undefined&&v!=='').join('_') || inquilino.ua);
+}
+
+function carpetaPara(tipo){
+  const base = `${APP_ROOT}/${unidadFolder()}`;
+  return {
+    datos: `${base}/Datos`,
+    notas: `${base}/Notas/Ocupacion`,
+    comunicaciones: `${base}/Comunicaciones`,
+    plano: `${base}/Plano`,
+    tecnica: `${base}/Ficha Tecnica`,
+    clausulas: `${base}/Datos/Clausulas`
+  }[tipo] || `${base}/Datos`;
+}
+
+async function graphFetch(path, options={}){
+  if(!msalToken) await refreshToken();
+  const resp = await fetch('https://graph.microsoft.com/v1.0' + path, {
+    ...options,
+    headers:{ Authorization:`Bearer ${msalToken}`, ...(options.headers||{}) }
+  });
+  if(!resp.ok){
+    const text = await resp.text().catch(()=>'');
+    const err = new Error(`Graph ${resp.status}: ${text || resp.statusText}`);
+    err.status = resp.status;
+    throw err;
+  }
+  return resp;
+}
+
+async function graphJson(path, options={}){
+  const resp = await graphFetch(path, options);
+  return resp.status===204 ? null : resp.json();
+}
+
+async function ensureFolder(path){
+  const parts = path.split('/').filter(Boolean);
+  let current = '';
+  for(const part of parts){
+    const childPath = current ? `${current}/${part}` : part;
+    try {
+      await graphJson(`/me/drive/root:/${encodeURI(childPath)}`);
+    } catch(e){
+      if(e.status !== 404) throw e;
+      const parentChildren = current ? `/me/drive/root:/${encodeURI(current)}:/children` : '/me/drive/root/children';
+      await graphJson(parentChildren, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name:part, folder:{}, '@microsoft.graph.conflictBehavior':'replace'})
+      });
+    }
+    current = childPath;
+  }
+}
+
+async function uploadBlobToOneDrive(folder, name, blob){
+  await ensureFolder(folder);
+  const resp = await graphFetch(`/me/drive/root:/${encodeURI(folder + '/' + name)}:/content`, {
+    method:'PUT',
+    headers:{'Content-Type': blob.type || 'application/octet-stream'},
+    body: blob
+  });
+  const item = await resp.json();
+  return {
+    nombre: item.name,
+    oneDriveId: item.id,
+    webUrl: item.webUrl,
+    ruta: `${folder}/${item.name}`,
+    mimeType: blob.type || '',
+    size: item.size || blob.size || 0
+  };
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function subirArchivoApp(file, tipo, descripcion='archivo', indice=1){
+  const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+  const nombre = `${nowStamp()}_${slug(descripcion)}_${String(indice).padStart(3,'0')}.${ext}`;
+  const meta = await uploadBlobToOneDrive(carpetaPara(tipo), nombre, file);
+  return {...meta, id:newId(), originalName:file.name, tipo};
+}
+
+function snapshotEstado(){
+  const limpio = value => JSON.parse(JSON.stringify(value, function(k,v){
+    if(k === 'dataUrl' && this && this.oneDriveId) return undefined;
+    return v;
+  }));
+  return {
+    version:1,
+    actualizado:new Date().toISOString(),
+    commsStore: limpio(commsStore),
+    notasStore: limpio(notasStore),
+    planoStore: limpio(planoStore),
+    tecnicaStore: limpio(tecnicaStore),
+    tecnicaFotosStore: limpio(tecnicaFotosStore),
+    clausulasFotosStore: limpio(clausulasFotosStore),
+    oneDriveStore: limpio(oneDriveStore),
+    docsStore: limpio(docsStore),
+    uidCounter
+  };
+}
+
+function replaceStore(target, source){
+  Object.keys(target).forEach(k=>delete target[k]);
+  Object.assign(target, source || {});
+}
+
+function aplicarEstado(st){
+  if(!st) return;
+  replaceStore(commsStore, st.commsStore);
+  replaceStore(notasStore, st.notasStore);
+  replaceStore(planoStore, st.planoStore);
+  replaceStore(tecnicaStore, st.tecnicaStore);
+  replaceStore(tecnicaFotosStore, st.tecnicaFotosStore);
+  replaceStore(clausulasFotosStore, st.clausulasFotosStore);
+  replaceStore(oneDriveStore, st.oneDriveStore);
+  replaceStore(docsStore, st.docsStore);
+  uidCounter = Math.max(uidCounter, Number(st.uidCounter || 1));
+}
+
+async function cargarEstadoApp(){
+  if(appStateLoaded) return;
+  appStateLoaded = true;
+  try{
+    const resp = await graphFetch(`/me/drive/root:/${encodeURI(APP_ROOT + '/' + APP_STATE_FILE)}:/content`);
+    aplicarEstado(await resp.json());
+    renderStats();
+    renderLista();
+  } catch(e){
+    if(e.status !== 404) console.warn('No se pudo cargar estado_app.json', e);
+  }
+}
+
+async function guardarEstadoApp(){
+  try{
+    await ensureFolder(APP_ROOT);
+    await graphFetch(`/me/drive/root:/${encodeURI(APP_ROOT + '/' + APP_STATE_FILE)}:/content`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(snapshotEstado(), null, 2)
+    });
+  } catch(e){
+    console.warn('No se pudo guardar estado en OneDrive', e);
+  }
+}
+
+function programarGuardarEstado(){
+  clearTimeout(saveStateTimer);
+  saveStateTimer = setTimeout(guardarEstadoApp, 1800);
+}
+
+async function guardarBaseDatosOneDrive(){
+  try{
+    await ensureFolder(APP_ROOT);
+    await graphFetch(`/me/drive/root:/${encodeURI(APP_ROOT + '/' + APP_DATA_FILE)}:/content`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({actualizado:new Date().toISOString(), data:DATA}, null, 2)
+    });
+  } catch(e){
+    console.warn('No se pudo guardar inquilinos.json', e);
+  }
+}
+
+function abrirFotoViewer(src, href){
+  const m = document.getElementById('foto-viewer');
+  const img = document.getElementById('foto-viewer-img');
+  const link = document.getElementById('foto-viewer-link');
+  const a = document.getElementById('foto-viewer-a');
+  if(src && String(src).startsWith('data:image')){
+    img.src = src; img.style.display='block'; link.style.display='none';
+  } else {
+    img.style.display='none'; link.style.display='block'; a.href = href || src || '#';
+  }
+  m.style.display='flex';
+}
+
+function cerrarFotoViewer(){
+  document.getElementById('foto-viewer').style.display='none';
+  document.getElementById('foto-viewer-img').src='';
+}
+
+function fotoThumbHtml(f, deleteHtml=''){
+  const src = fileSrc(f);
+  const href = fileOpenUrl(f);
+  const safeSrc = escHtml(src || '');
+  const safeHref = escHtml(href || '');
+  const inner = src && String(src).startsWith('data:image')
+    ? `<img src="${safeSrc}" class="foto-thumb" onclick="abrirFotoViewer('${safeSrc}','${safeHref}')">`
+    : `<span class="foto-ph" onclick="abrirFotoViewer('','${safeHref}')">🖼️</span>`;
+  return `<span class="foto-thumb-wrap">${inner}${deleteHtml}</span>`;
+}
+
+let odPickerState = {mode:'folder', target:'fotos', path:''};
+let docOneDriveMeta = null;
+
+async function listarOneDrive(path=''){
+  const endpoint = path
+    ? `/me/drive/root:/${encodeURI(path)}:/children?$select=id,name,folder,file,size,webUrl,parentReference`
+    : `/me/drive/root/children?$select=id,name,folder,file,size,webUrl,parentReference`;
+  const json = await graphJson(endpoint);
+  return json.value || [];
+}
+
+function cerrarOneDrivePicker(){
+  document.getElementById('od-picker').style.display='none';
+}
+
+function odPathParts(path){
+  return String(path||'').split('/').filter(Boolean);
+}
+
+async function abrirOneDrivePicker(mode='folder', target='fotos'){
+  odPickerState = {mode, target, path:''};
+  document.getElementById('od-picker-title').textContent = target === 'fotos'
+    ? 'Seleccionar carpeta de fotos'
+    : 'Seleccionar documento o carpeta';
+  document.getElementById('od-picker').style.display='flex';
+  await renderOneDrivePicker();
+}
+
+async function renderOneDrivePicker(){
+  const body = document.getElementById('od-picker-body');
+  const path = odPickerState.path || '';
+  body.innerHTML = '<p style="font-size:12px;color:var(--slate-400)">Cargando OneDrive...</p>';
+  try{
+    const items = await listarOneDrive(path);
+    const carpetas = items.filter(x=>x.folder).sort((a,b)=>a.name.localeCompare(b.name));
+    const archivos = items.filter(x=>x.file).sort((a,b)=>a.name.localeCompare(b.name));
+    const parts = odPathParts(path);
+    const volver = parts.length
+      ? `<button class="btn-cancel" onclick="odPickerSubirNivel()">Subir nivel</button>`
+      : '';
+    const usarCarpeta = `<button class="btn-save" onclick="odPickerUsarCarpeta()">Usar esta carpeta</button>`;
+    const visibles = [...carpetas, ...archivos];
+    const filas = visibles.map((item, idx)=>{
+      const isFolder = !!item.folder;
+      const disabled = !isFolder && odPickerState.mode === 'folder';
+      const action = isFolder
+        ? `odPickerEntrar(${idx})`
+        : `odPickerUsarArchivo(${idx})`;
+      const meta = isFolder ? 'Carpeta' : (item.file?.mimeType || 'Archivo');
+      return `<div class="od-row" ${disabled ? '' : `onclick="${action}"`}>
+        <span>${isFolder ? '📁' : '📄'}</span>
+        <div class="name">${escHtml(item.name)}</div>
+        <div class="meta">${escHtml(meta)}</div>
+      </div>`;
+    }).join('') || '<p style="font-size:12px;color:var(--slate-400)">Esta carpeta está vacía.</p>';
+    window._odPickerItems = visibles;
+    body.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        ${volver}
+        ${usarCarpeta}
+        <label class="btn-cancel" style="cursor:pointer">Subir aquí
+          <input type="file" onchange="odPickerSubirArchivo(event)" style="display:none">
+        </label>
+      </div>
+      <div style="font-size:11px;color:var(--slate-400);margin-bottom:8px">/${escHtml(path)}</div>
+      ${filas}`;
+  } catch(e){
+    body.innerHTML = `<p style="font-size:12px;color:#dc2626">No se pudo abrir OneDrive. ${escHtml(e.message||e)}</p>`;
+  }
+}
+
+async function odPickerEntrar(idx){
+  const item = (window._odPickerItems||[])[idx];
+  if(!item) return;
+  odPickerState.path = odPickerState.path ? `${odPickerState.path}/${item.name}` : item.name;
+  await renderOneDrivePicker();
+}
+
+async function odPickerSubirNivel(){
+  const parts = odPathParts(odPickerState.path);
+  parts.pop();
+  odPickerState.path = parts.join('/');
+  await renderOneDrivePicker();
+}
+
+function aplicarSeleccionOneDrive(meta){
+  if(odPickerState.target === 'fotos'){
+    oneDriveStore[inquilino.ua] = meta;
+    renderOdLink();
+    programarGuardarEstado();
+  } else {
+    docOneDriveMeta = meta;
+    document.getElementById('doc-nombre').value = meta.nombre || meta.name || '';
+    document.getElementById('doc-url').value = meta.webUrl || meta.url || '';
+    document.getElementById('doc-form').classList.add('vis');
+  }
+  cerrarOneDrivePicker();
+}
+
+async function odPickerUsarCarpeta(){
+  const path = odPickerState.path || '';
+  let webUrl = '';
+  let oneDriveId = '';
+  if(path){
+    try{
+      const item = await graphJson(`/me/drive/root:/${encodeURI(path)}?$select=id,name,webUrl`);
+      webUrl = item.webUrl || '';
+      oneDriveId = item.id || '';
+    } catch(e){ console.warn('No se pudo obtener enlace de carpeta', e); }
+  }
+  aplicarSeleccionOneDrive({
+    id:newId(),
+    nombre:path ? path.split('/').pop() : 'OneDrive',
+    ruta:path,
+    oneDriveId,
+    webUrl,
+    tipo:'folder'
+  });
+}
+
+function odPickerUsarArchivo(idx){
+  const item = (window._odPickerItems||[])[idx];
+  if(!item) return;
+  aplicarSeleccionOneDrive({
+    id:newId(),
+    nombre:item.name,
+    oneDriveId:item.id,
+    webUrl:item.webUrl,
+    ruta:odPickerState.path ? `${odPickerState.path}/${item.name}` : item.name,
+    tipo:item.folder ? 'folder' : 'file'
+  });
+}
+
+async function odPickerSubirArchivo(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  try{
+    const item = await uploadBlobToOneDrive(odPickerState.path || APP_ROOT, file.name, file);
+    window._odPickerItems = [];
+    if(odPickerState.mode === 'any'){
+      aplicarSeleccionOneDrive({...item, id:newId(), tipo:'file'});
+    } else {
+      await renderOneDrivePicker();
+    }
+  } catch(e){
+    alert('No se pudo subir el archivo a OneDrive: ' + (e.message || e));
+  } finally {
+    ev.target.value='';
+  }
+}
 
 const TECNICA_CAMPOS = [
   {k:'gas', label:'Tiene gas'},
@@ -923,7 +1364,7 @@ function renderComms(){
   }
   tl.innerHTML = filtered.map(c=>{
     const cfg = tipoConf[c.tipo]||tipoConf.nota;
-    const fotosHtml = (c.fotos||[]).length ? `<div class="foto-thumbs">${c.fotos.map(f=>`<img src="${f.dataUrl}" class="foto-thumb">`).join('')}</div>` : '';
+    const fotosHtml = (c.fotos||[]).length ? `<div class="foto-thumbs">${c.fotos.map(f=>fotoThumbHtml(f)).join('')}</div>` : '';
     return `<div class="tl-item ${cfg.cls}">
       <div class="tl-icon">${cfg.icon}</div>
       <div class="tl-content">
@@ -972,6 +1413,7 @@ function borrarComm(id){
   commsStore[inquilino.ua] = (commsStore[inquilino.ua]||[]).filter(c=>c.id!==id);
   document.getElementById('cnt-comms').textContent = commsStore[inquilino.ua].length;
   renderComms();
+  programarGuardarEstado();
 }
 
 function guardarComm(){
@@ -993,27 +1435,29 @@ function guardarComm(){
   document.getElementById('comm-form').classList.remove('vis');
   resetCommForm();
   renderComms();
+  programarGuardarEstado();
 }
 
 // --- FOTOS (genérico para comm y nota) ---
-function onFotosSelected(ev, kind){
+async function onFotosSelected(ev, kind){
   const files = Array.from(ev.target.files||[]);
   const target = kind==='comm' ? tempFotosComm : tempFotosNota;
   const previewId = kind==='comm' ? 'n-fotos-preview' : 'nt-fotos-preview';
-  files.forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = e=>{
-      target.push({id:newId(), dataUrl:e.target.result});
-      renderFotoPreview(previewId, target, kind);
-    };
-    reader.readAsDataURL(file);
-  });
+  let i = 1;
+  for(const file of files){
+    const foto = {id:newId(), nombre:file.name, dataUrl:await fileToDataUrl(file)};
+    target.push(foto);
+    renderFotoPreview(previewId, target, kind);
+    try{
+      Object.assign(foto, await subirArchivoApp(file, kind==='comm'?'comunicaciones':'notas', kind==='comm'?'comunicacion':'nota_ocupacion', i++));
+    } catch(e){ console.warn('Foto sin subir a OneDrive', e); }
+  }
   ev.target.value='';
 }
 
 function renderFotoPreview(containerId, fotos, kind){
   document.getElementById(containerId).innerHTML = fotos.map(f=>
-    `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFoto('${f.id}','${kind}')">✕</button></span>`
+    fotoThumbHtml(f, `<button type="button" class="foto-del" onclick="quitarFoto('${f.id}','${kind}')">✕</button>`)
   ).join('');
 }
 
@@ -1038,7 +1482,7 @@ function renderNotas(){
     return;
   }
   list.innerHTML = notas.map(n=>{
-    const fotosHtml = (n.fotos||[]).length ? `<div class="foto-thumbs">${n.fotos.map(f=>`<img src="${f.dataUrl}" class="foto-thumb">`).join('')}</div>` : '';
+    const fotosHtml = (n.fotos||[]).length ? `<div class="foto-thumbs">${n.fotos.map(f=>fotoThumbHtml(f)).join('')}</div>` : '';
     return `<div class="tl-item tl-nota">
       <div class="tl-icon">📝</div>
       <div class="tl-content">
@@ -1085,6 +1529,7 @@ function borrarNota(id){
   notasStore[inquilino.ua] = (notasStore[inquilino.ua]||[]).filter(n=>n.id!==id);
   document.getElementById('cnt-notas').textContent = notasStore[inquilino.ua].length;
   renderNotas();
+  programarGuardarEstado();
 }
 
 function guardarNota(){
@@ -1104,22 +1549,25 @@ function guardarNota(){
   document.getElementById('nota-form').classList.remove('vis');
   resetNotaForm();
   renderNotas();
+  programarGuardarEstado();
 }
 
 // --- PLANO ---
 function renderPlano(){
   const url = planoStore[inquilino.ua];
   document.getElementById('plano-view').innerHTML = url
-    ? `<img src="${url}" style="max-width:100%;border-radius:10px;border:1px solid var(--slate-200)"><div style="margin-top:8px"><button class="btn-link danger" onclick="quitarPlano()">🗑️ Eliminar plano</button></div>`
+    ? `<div>${fotoThumbHtml(typeof url==='string'?{dataUrl:url}:url)}</div><div style="margin-top:8px"><button class="btn-link danger" onclick="quitarPlano()">🗑️ Eliminar plano</button></div>`
     : `<div class="ua-empty"><div class="ico">📐</div><p>Sin plano subido todavía.</p></div>`;
 }
 
-function onPlanoSelected(ev){
+async function onPlanoSelected(ev){
   const file = ev.target.files[0];
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e=>{ planoStore[inquilino.ua] = e.target.result; renderPlano(); };
-  reader.readAsDataURL(file);
+  const plano = {id:newId(), nombre:file.name, dataUrl:await fileToDataUrl(file)};
+  planoStore[inquilino.ua] = plano;
+  renderPlano();
+  try{ Object.assign(plano, await subirArchivoApp(file, 'plano', 'plano', 1)); } catch(e){ console.warn('Plano sin subir a OneDrive', e); }
+  programarGuardarEstado();
   ev.target.value='';
 }
 
@@ -1127,6 +1575,7 @@ function quitarPlano(){
   if(!confirm('¿Eliminar el plano?')) return;
   delete planoStore[inquilino.ua];
   renderPlano();
+  programarGuardarEstado();
 }
 
 // --- FICHA TÉCNICA ---
@@ -1139,31 +1588,31 @@ function renderTecnica(){
     return `<div class="ft-row" style="border-bottom:1px solid var(--slate-100);padding:12px 0">
       <div class="fg"><label>${c.label}</label><input type="text" data-ft="${c.k}" value="${(t[c.k]||'').replace(/"/g,'&quot;')}" placeholder="—"></div>
       <div class="foto-thumbs" id="ft-fotos-${c.k}">${fotos.map(f=>
-        `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFotoTecnica('${c.k}','${f.id}')">✕</button></span>`
+        fotoThumbHtml(f, `<button type="button" class="foto-del" onclick="quitarFotoTecnica('${c.k}','${f.id}')">✕</button>`)
       ).join('')}</div>
       <input type="file" accept="image/*" multiple onchange="onFotoTecnicaSelected(event,'${c.k}')" style="font-size:11px;margin-top:6px">
     </div>`;
   }).join('');
 }
 
-function onFotoTecnicaSelected(ev, campo){
+async function onFotoTecnicaSelected(ev, campo){
   const files = Array.from(ev.target.files||[]);
   if(!tecnicaFotosStore[inquilino.ua][campo]) tecnicaFotosStore[inquilino.ua][campo] = [];
-  files.forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = e=>{
-      tecnicaFotosStore[inquilino.ua][campo].push({id:newId(), dataUrl:e.target.result});
-      renderTecnicaFotos(campo);
-    };
-    reader.readAsDataURL(file);
-  });
+  let i = 1;
+  for(const file of files){
+    const foto = {id:newId(), nombre:file.name, dataUrl:await fileToDataUrl(file)};
+    tecnicaFotosStore[inquilino.ua][campo].push(foto);
+    renderTecnicaFotos(campo);
+    try{ Object.assign(foto, await subirArchivoApp(file, 'tecnica', 'ficha_tecnica_'+campo, i++)); } catch(e){ console.warn('Foto técnica sin subir a OneDrive', e); }
+  }
+  programarGuardarEstado();
   ev.target.value='';
 }
 
 function renderTecnicaFotos(campo){
   const fotos = tecnicaFotosStore[inquilino.ua][campo] || [];
   document.getElementById('ft-fotos-'+campo).innerHTML = fotos.map(f=>
-    `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFotoTecnica('${campo}','${f.id}')">✕</button></span>`
+    fotoThumbHtml(f, `<button type="button" class="foto-del" onclick="quitarFotoTecnica('${campo}','${f.id}')">✕</button>`)
   ).join('');
 }
 
@@ -1171,6 +1620,7 @@ function quitarFotoTecnica(campo, id){
   if(!confirm('¿Eliminar esta foto?')) return;
   tecnicaFotosStore[inquilino.ua][campo] = (tecnicaFotosStore[inquilino.ua][campo]||[]).filter(f=>f.id!==id);
   renderTecnicaFotos(campo);
+  programarGuardarEstado();
 }
 
 function guardarTecnica(){
@@ -1178,15 +1628,19 @@ function guardarTecnica(){
   const t = {};
   document.querySelectorAll('#ft-grid [data-ft]').forEach(inp=>{ t[inp.dataset.ft] = inp.value.trim(); });
   tecnicaStore[inquilino.ua] = t;
-  alert('Ficha técnica guardada (prototipo, sin persistencia real todavía).');
+  programarGuardarEstado();
+  alert('Ficha técnica guardada.');
 }
 
 // --- FOTOS (carpeta OneDrive) ---
 function renderOdLink(){
-  const url = oneDriveStore[inquilino.ua] || '';
+  const saved = oneDriveStore[inquilino.ua] || '';
+  const url = typeof saved === 'string' ? saved : (saved.webUrl || saved.url || '');
+  const nombre = typeof saved === 'string' ? 'carpeta' : (saved.ruta || saved.nombre || 'carpeta');
   document.getElementById('od-link-input').value = url;
   document.getElementById('od-link-view').innerHTML = url
-    ? `<a href="${url}" target="_blank" class="btn-save" style="display:inline-block;text-decoration:none">📂 Abrir carpeta en OneDrive</a>`
+    ? `<a href="${escHtml(url)}" target="_blank" class="btn-save" style="display:inline-block;text-decoration:none">📂 Abrir carpeta en OneDrive</a>
+       <div style="font-size:11px;color:var(--slate-400);margin-top:6px">${escHtml(nombre)}</div>`
     : `<p style="font-size:12px;color:var(--slate-400)">Sin enlace guardado todavía.</p>`;
 }
 
@@ -1195,6 +1649,7 @@ function guardarOdLink(){
   const url = document.getElementById('od-link-input').value.trim();
   oneDriveStore[inquilino.ua] = url;
   renderOdLink();
+  programarGuardarEstado();
 }
 
 // --- PRINT ---
@@ -1211,84 +1666,123 @@ function cerrarInforme(){
   document.getElementById('modal-informe').style.display='none';
 }
 
+let lastReportHtml = '';
+
 function generarInforme(){
   const d = inquilino;
   const inc = id => document.getElementById(id).checked;
-  const E = (t,v) => v ? `<tr><td class="lbl">${t}</td><td>${v}</td></tr>` : '';
-  const S = t => `<tr><th colspan="2" class="sec">${t}</th></tr>`;
-  let html = `<div class="print-cnt" id="print-content">
-    <div class="ph-name">${d.arrendatario}</div>
-    <div class="ph-addr">${d.direccion||''} ${d.portal||''} ${d.piso!=null?d.piso:''} ${d.puerta!=null?d.puerta:''} · ${d.municipio||''} · ${d.refua}</div>
-    <hr class="ph-div">`;
+  const val = v => v===0 || (v!==null && v!==undefined && String(v).trim()!=='');
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const E = (t,v) => val(v) ? `<tr><td class="lbl">${esc(t)}</td><td>${esc(v)}</td></tr>` : '';
+  const section = (titulo, contenido) => `<section class="report-sec"><h2>${esc(titulo)}</h2>${contenido || '<p class="report-empty">Sin datos registrados</p>'}</section>`;
+  const table = rows => rows ? `<table class="report-table">${rows}</table>` : '';
+  const fotoSrc = f => f && (f.oneDriveUrl || f.webUrl || f.dataUrl || f.url || f.src);
+  const fotosHtml = fotos => {
+    const imgs = (fotos||[]).map(fotoSrc).filter(Boolean);
+    return imgs.length ? `<div class="report-photos">${imgs.map(src=>`<img src="${esc(src)}" class="report-photo">`).join('')}</div>` : '';
+  };
+  let html = `<article class="report-body">
+    <header class="report-head">
+      <div>
+        <div class="report-brand">Arrenda<span>·</span>pro</div>
+        <h1>${esc(d.arrendatario)}</h1>
+        <p>${esc([d.direccion, d.portal, d.piso, d.puerta].filter(val).join(' '))} · ${esc(d.municipio||'')} · ${esc(d.refua||d.ua||'')}</p>
+      </div>
+      <div class="report-date">${new Date().toLocaleDateString('es-ES')}</div>
+    </header>`;
 
   if(inc('ch-datos')){
-    html+=`<table class="pt">${S('DATOS PERSONALES')}
-      ${E('Arrendatario',d.arrendatario)}${E('NIF/NIE',d.nif)}${E('Teléfono',d.telefono)}${E('Email',d.mail)}</table>`;
+    html+=section('Datos personales', table(
+      E('Arrendatario',d.arrendatario)+E('NIF/NIE',d.nif)+E('Teléfono',d.telefono)+E('Email',d.mail)
+    ));
   }
   if(inc('ch-contrato')){
     const ci = ((d.contracte||0)+(d.cs_contrato||0));
-    html+=`<table class="pt">${S('CONTRATO')}
-      ${E('Tipo',d.tipo_contrato)}${E('Inicio',d.f_inicio)}
-      ${E('Cto. inicial total',ci?fmtE(ci):'—')}${E('Renta inicial',d.contracte!=null?fmtE(d.contracte):'—')}
-      ${E('Coste servicios inicial',d.cs_contrato!=null?fmtE(d.cs_contrato):'—')}
-      ${E('Fecha fin',d.fecha_fin)}${E('Tipo fin',d.tipo_fin)}${E('Preaviso fin',d.preaviso_fin)}
-      ${E('Tipo revisión',d.tipo_revision)}${E('Fecha revisión renta',d.fecha_revision_renta)}
-      ${E('Fianza total',d.fi_importe!=null?fmtE(d.fi_importe):'—')}
-      ${E('Fi. Incasol',d.fi_incasol!=null?fmtE(d.fi_incasol):'—')}
-      ${E('Fianza adicional',d.fianza_adicional!=null?fmtE(d.fianza_adicional):'—')}
-      ${E('Cobro',d.via_cobro)}</table>`;
+    html+=section('Contrato', table(
+      E('Tipo',d.tipo_contrato)+E('Inicio',d.f_inicio)+
+      E('Cto. inicial total',ci?fmtE(ci):null)+E('Renta inicial',d.contracte!=null?fmtE(d.contracte):null)+
+      E('Coste servicios inicial',d.cs_contrato!=null?fmtE(d.cs_contrato):null)+
+      E('Fecha fin',d.fecha_fin)+E('Tipo fin',d.tipo_fin)+E('Preaviso fin',d.preaviso_fin)+
+      E('Tipo revisión',d.tipo_revision)+E('Fecha revisión renta',d.fecha_revision_renta)+
+      E('Fianza total',d.fi_importe!=null?fmtE(d.fi_importe):null)+
+      E('Fi. Incasol',d.fi_incasol!=null?fmtE(d.fi_incasol):null)+
+      E('Fianza adicional',d.fianza_adicional!=null?fmtE(d.fianza_adicional):null)+
+      E('Cobro',d.via_cobro)
+    ));
   }
   if(inc('ch-clausulas')){
-    html+=`<table class="pt">${S('CLÁUSULAS DEL CONTRATO')}
-      ${E('Repercusión gastos',d.cl_repercusion)}${E('Gastos Escalera',d.cl_escalera)}
-      ${E('Luz Escalera',d.cl_luz_escalera)}${E('Tasas',d.cl_tasas)}
-      ${E('Impuestos IBI',d.cl_ibi)}${E('Coste Serv. Agua',d.cl_agua)}
-      ${E('Electrodomésticos',d.cl_electrodomesticos)}${E('Rev. Equipos ACS',d.cl_caldera)}
-      ${E('Seguro',d.cl_seguro)}</table>`;
-    const clFotos = clausulasFotosStore[d.ua]||[];
-    if(clFotos.length) html+=`<div class="pt-fotos">${clFotos.map(f=>`<img src="${f.dataUrl}" class="pt-foto">`).join('')}</div>`;
+    let contenido = table(
+      E('Repercusión gastos',d.cl_repercusion)+E('Gastos Escalera',d.cl_escalera)+
+      E('Luz Escalera',d.cl_luz_escalera)+E('Tasas',d.cl_tasas)+
+      E('Impuestos IBI',d.cl_ibi)+E('Coste Serv. Agua',d.cl_agua)+
+      E('Electrodomésticos',d.cl_electrodomesticos)+E('Rev. Equipos ACS',d.cl_caldera)+
+      E('Seguro',d.cl_seguro)
+    );
+    if(inc('ch-clausulas-fotos')) contenido += fotosHtml(clausulasFotosStore[d.ua]||[]);
+    html+=section('Cláusulas del contrato', contenido);
   }
   if(inc('ch-piso')){
     const ceeVal = [d.registro_cee,d.calif_cee].filter(Boolean).join(' ')||'—';
-    html+=`<table class="pt">${S('DATOS DEL PISO')}
-      ${E('UA',d.refua)}${E('m2 Adoptada',d.m2_adoptada?d.m2_adoptada+' m²':'—')}
-      ${E('m2 Alquilable',d.m2_alquilable?d.m2_alquilable+' m²':'—')}
-      ${E('Const. Proym2',d.const_proym2?fmtE(d.const_proym2):'—')}
-      ${E('Registro CEE',ceeVal)}${E('Fecha fin CEE',d.fecha_fin_cee)}
-      ${E('CHB (Nº Cédula)',d.num_cedula)}${E('Fecha fin CHB',d.chb_caducidad)}
-      ${E('Estado actual',d.estado_actual)}${E('Subarriendo',d.subarriendo)}</table>`;
+    html+=section('Datos del piso', table(
+      E('UA',d.refua)+E('m2 Adoptada',d.m2_adoptada?d.m2_adoptada+' m²':null)+
+      E('m2 Alquilable',d.m2_alquilable?d.m2_alquilable+' m²':null)+
+      E('Const. Proym2',d.const_proym2?fmtE(d.const_proym2):null)+
+      E('Registro CEE',ceeVal)+E('Fecha fin CEE',d.fecha_fin_cee)+
+      E('CHB (Nº Cédula)',d.num_cedula)+E('Fecha fin CHB',d.chb_caducidad)+
+      E('Estado actual',d.estado_actual)+E('Subarriendo',d.subarriendo)
+    ));
   }
   if(inc('ch-notas')){
     const notas = notasStore[d.ua]||[];
+    notas.sort((a,b)=>(a.fechaRaw||'').localeCompare(b.fechaRaw||''));
+    let contenido = notas.map(n=>`<div class="report-entry"><div class="report-meta">Nota · ${esc(n.fecha||'Sin fecha')}</div><div>${esc(n.texto||'')}</div>${inc('ch-notas-fotos') ? fotosHtml(n.fotos||[]) : ''}</div>`).join('');
+    html+=section('Notas/Ocupación', contenido);
+  }
+  if(inc('ch-comms')){
     const comms = commsStore[d.ua]||[];
-    const todos = [...notas.map(n=>({...n,_tipo:'nota'})),...comms.map(c=>({...c,_tipo:'comm'}))];
-    todos.sort((a,b)=>(a.fechaRaw||'').localeCompare(b.fechaRaw||''));
-    if(todos.length){
-      html+=`<div class="pt-sec">NOTAS Y COMUNICACIONES</div>`;
-      todos.forEach(e=>{
-        const tconf = tipoConf[e.tipo]||tipoConf.nota;
-        const label = e._tipo==='nota' ? '📝 Nota' : (tconf.icon+' '+tconf.label);
-        html+=`<div class="pt-entry"><div class="pt-entry-meta">${label} · ${e.fecha||'Sin fecha'}</div><div class="pt-entry-text">${e.texto}</div>`;
-        const fotos = e.fotos||[];
-        if(fotos.length) html+=`<div class="pt-fotos">${fotos.map(f=>`<img src="${f.dataUrl}" class="pt-foto">`).join('')}</div>`;
-        html+='</div>';
-      });
-    }
+    comms.sort((a,b)=>(a.fechaRaw||'').localeCompare(b.fechaRaw||''));
+    let contenido = comms.map(c=>{
+      const tconf = tipoConf[c.tipo]||tipoConf.nota;
+      return `<div class="report-entry"><div class="report-meta">${esc(tconf.label)} · ${esc(c.fecha||'Sin fecha')}</div><div>${esc(c.texto||'')}</div>${inc('ch-comms-fotos') ? fotosHtml(c.fotos||[]) : ''}</div>`;
+    }).join('');
+    html+=section('Comunicaciones', contenido);
   }
   if(inc('ch-plano')){
-    const url = planoStore[d.ua];
-    if(url) html+=`<div class="pt-sec">PLANO</div><img src="${url}" style="max-width:100%;border-radius:6px;margin-top:8px">`;
+    const plano = planoStore[d.ua];
+    const src = fileSrc(plano);
+    html+=section('Plano', src ? `<img src="${esc(src)}" class="report-plan">` : '');
   }
   if(inc('ch-tecnica')){
     const t = tecnicaStore[d.ua]||{};
-    const filas = TECNICA_CAMPOS.filter(f=>t[f.k]).map(f=>E(f.label,t[f.k])).join('');
-    if(filas) html+=`<table class="pt">${S('FICHA TÉCNICA')}${filas}</table>`;
+    let contenido = table(TECNICA_CAMPOS.filter(f=>t[f.k]).map(f=>E(f.label,t[f.k])).join(''));
+    if(inc('ch-tecnica-fotos')){
+      const fotos = [];
+      const porCampo = tecnicaFotosStore[d.ua]||{};
+      Object.values(porCampo).forEach(arr => (arr||[]).forEach(f => fotos.push(f)));
+      contenido += fotosHtml(fotos);
+    }
+    html+=section('Ficha técnica', contenido);
   }
 
-  html+=`<div class="print-foot"><span>Generado el ${new Date().toLocaleDateString('es-ES')}</span><span>Arrendapro</span></div></div>`;
-  document.getElementById('print-content').outerHTML = html;
+  html+=`<footer class="report-foot"><span>Generado el ${new Date().toLocaleDateString('es-ES')}</span><span>Arrendapro</span></footer></article>`;
+  lastReportHtml = html;
+  document.getElementById('print-content').innerHTML = html;
   document.getElementById('modal-informe').style.display='none';
   document.getElementById('print-overlay').classList.add('vis');
+}
+
+function informePrintCss(){
+  return `@page{size:A4;margin:14mm}body{font-family:Inter,Arial,sans-serif;color:#111827;background:#fff;margin:0}.report-body{max-width:760px;margin:0 auto}.report-head{display:flex;justify-content:space-between;gap:24px;border-bottom:3px solid #111827;padding-bottom:14px;margin-bottom:18px}.report-brand{font-family:Georgia,serif;font-weight:700;font-size:17px;margin-bottom:8px}.report-brand span{color:#4f46e5}.report-head h1{font-family:Georgia,serif;font-size:26px;line-height:1.1;margin:0 0 5px}.report-head p{margin:0;color:#64748b;font-size:12px}.report-date{font-size:11px;color:#64748b;white-space:nowrap}.report-sec{break-inside:avoid;margin:0 0 16px}.report-sec h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#334155;background:#f1f5f9;padding:6px 8px;margin:0 0 8px}.report-table{width:100%;border-collapse:collapse;font-size:12px}.report-table td{padding:5px 7px;border-bottom:1px solid #eef2f7;vertical-align:top}.report-table .lbl{width:36%;font-weight:600;color:#64748b}.report-empty{font-size:12px;color:#94a3b8;font-style:italic;margin:6px 8px}.report-entry{border-left:3px solid #e2e8f0;padding:8px 10px;margin:0 0 9px;font-size:12px;break-inside:avoid}.report-meta{font-size:11px;color:#64748b;font-weight:700;margin-bottom:3px}.report-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.report-photo{width:100%;height:125px;object-fit:cover;border:1px solid #e2e8f0;border-radius:4px}.report-plan{max-width:100%;max-height:620px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px}.report-foot{display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;margin-top:24px;padding-top:10px;font-size:10px;color:#94a3b8}`;
+}
+
+function imprimirInforme(){
+  const contenido = lastReportHtml || document.getElementById('print-content').innerHTML;
+  if(!contenido){ alert('Genera el informe primero.'); return; }
+  const w = window.open('', '_blank');
+  if(!w){ window.print(); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe - ${inquilino ? inquilino.arrendatario : 'Arrendapro'}</title><style>${informePrintCss()}</style></head><body>${contenido}</body></html>`);
+  w.document.close();
+  setTimeout(()=>{ w.focus(); w.print(); }, 300);
 }
 
 function hidePrint(){
@@ -1296,36 +1790,109 @@ function hidePrint(){
   document.body.style.overflow='';
 }
 
-// --- BBDD: CAMPOS ESPERADOS (nombre en Excel → clave interna) ---
-// Índices fijos de columnas en BD Contratos (fila 4, base 0)
-// Verificados directamente del Excel BBDD_2026_MB_.xlsx
-const COL = {
-  ua:0, ref:1, municipio:2, piso:9, puerta:10,
-  registro_cee:11, calif_cee:12, fecha_fin_cee:14,
-  num_cedula:16, chb_caducidad:18,
-  direccion:6, portal:7,
-  const_proym2:44, m2_alquilable:48, m2_adoptada:49, precio_m2_alquilable:50,
-  estado_actual:57, subarriendo:61, ocupacion:63,
-  uso:65, nif:67, telefono:68, mail:69, arrendatario:71,
-  f_inicio:79, tipo_fin:93, preaviso_fin:94, fecha_fin:95,
-  fi_incasol:97, fianza_adicional:103, fi_importe:104,
-  fecha_revision_renta:105, tipo_revision:106,
-  cl_repercusion:107, cl_escalera:108, cl_luz_escalera:109,
-  cl_tasas:110, cl_ibi:111, cl_agua:112,
-  cl_electrodomesticos:113, cl_caldera:114, cl_seguro:115,
-  contracte:116, cs_contrato:122,
-  bi:135, pct_iva:136, via_cobro:139,
+// --- BBDD: CAMPOS ESPERADOS (cabeceras Excel fila 4 -> clave interna) ---
+// Se buscan por nombre de cabecera, no por posición fija, para que insertar columnas no rompa la carga.
+const FIELD_ALIASES = {
+  ua:['UA'],
+  ref:['Ref'],
+  municipio:['Municipio'],
+  direccion:['Dirección','Direccion'],
+  portal:['Portal'],
+  piso:['Piso'],
+  puerta:['Puerta'],
+  registro_cee:['Registro CEE'],
+  calif_cee:['Calif.','Calif CEE','Calificación CEE','Calificacion CEE'],
+  fecha_fin_cee:['Fecha fin CEE'],
+  num_cedula:['Nº Cédula','N Cédula','Num Cedula','Numero Cedula'],
+  chb_caducidad:['CHB Caducidad'],
+  const_proym2:['Const. Proy m2','Const. Proym2','Const Proy m2'],
+  m2_alquilable:['m2 Alquilable'],
+  m2_adoptada:['m2 Adoptada'],
+  precio_m2_alquilable:['Precio m2 Alquilable'],
+  estado_actual:['Estado actual'],
+  subarriendo:['Subarriendo'],
+  ocupacion:['Ocupación','Ocupacion'],
+  uso:['Uso'],
+  nif:['NIF'],
+  telefono:['Teléfono','Telefono'],
+  mail:['mail','Email','E-mail'],
+  arrendatario:['Arrendatario Actual','Arrendatario'],
+  f_inicio:['F. Inicio','Fecha Inicio'],
+  tipo_fin:['Tipo fin'],
+  preaviso_fin:['Preaviso Fin'],
+  fecha_fin:['Fecha Fin'],
+  fi_incasol:['Fi. Incasol','Fi Incasol'],
+  fianza_adicional:['Fianza Adicional'],
+  fi_importe:['Fi.Importe','Fi Importe'],
+  fecha_revision_renta:['Fecha revisión renta','Fecha revision renta'],
+  tipo_revision:['Tipo revisión','Tipo revision'],
+  cl_repercusion:['Clausula repercusión de gastos','Cláusula repercusión de gastos','Clausula repercusion de gastos'],
+  cl_escalera:['Gastos Escalera Cto','Gastos Escalera'],
+  cl_luz_escalera:['Luz Escalera Cto','Luz Escalera'],
+  cl_tasas:['Tasas'],
+  cl_ibi:['Impuestos IBI Cto','Impuestos IBI','IBI'],
+  cl_agua:['Coste Servicios Agua Cto','Coste Servicios Agua','Agua'],
+  cl_electrodomesticos:['electrodomésticos Cto','Electrodomésticos Cto','Electrodomesticos Cto','Electrodomésticos'],
+  cl_caldera:['Revisión Caldera Cto','Revision Caldera Cto','Revisión Caldera','Revision Caldera'],
+  cl_seguro:['Seguro Clausula Cto','Seguro Cláusula Cto','Seguro'],
+  contracte:['Renta contrato','Contracte','Renta Contracte','Renta'],
+  cs_contrato:['Coste Servicios Contrato','CS Contrato'],
+  bi:['BI'],
+  pct_iva:['%IVA','IVA'],
+  via_cobro:['Vía','Via','Vía cobro','Via cobro'],
 };
-// CAMPOS_ESPERADOS solo para validación visual (nombres reales del Excel)
-const CAMPOS_ESPERADOS = {
-  'Arrendatario Actual':'arrendatario','NIF':'nif','Teléfono':'telefono','mail':'mail',
-  'Uso':'uso','F. Inicio':'f_inicio','Contracte':'contracte',
-  'Tipo fin':'tipo_fin','Fecha Fin':'fecha_fin','Preaviso Fin':'preaviso_fin',
-  'Fi. Incasol':'fi_incasol','Fianza Adicional':'fianza_adicional','Fi.Importe':'fi_importe',
-  'Ref':'ref','Piso':'piso','Puerta':'puerta','Municipio':'municipio',
-  'Dirección':'direccion','Portal':'portal',
-  'BI':'bi','%IVA':'pct_iva',
-};
+
+const CAMPOS_REQUERIDOS = [
+  ['Arrendatario Actual','arrendatario'],
+  ['NIF','nif'],
+  ['Teléfono','telefono'],
+  ['mail','mail'],
+  ['Uso','uso'],
+  ['F. Inicio','f_inicio'],
+  ['Renta contrato','contracte'],
+  ['Tipo fin','tipo_fin'],
+  ['Fecha Fin','fecha_fin'],
+  ['Preaviso Fin','preaviso_fin'],
+  ['Fi. Incasol','fi_incasol'],
+  ['Fianza Adicional','fianza_adicional'],
+  ['Fi.Importe','fi_importe'],
+  ['Ref','ref'],
+  ['Piso','piso'],
+  ['Puerta','puerta'],
+  ['Municipio','municipio'],
+  ['Dirección','direccion'],
+  ['Portal','portal'],
+  ['BI','bi'],
+  ['%IVA','pct_iva'],
+];
+
+function normHeader(s){
+  return s ? String(s).replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
+}
+
+function compactHeader(s){
+  return normHeader(s).replace(/[^a-z0-9%]+/g,'');
+}
+
+function buscarColumna(headerInfo, aliases, minIndex = 0){
+  const aliasInfo = aliases.map(a => ({norm:normHeader(a), compact:compactHeader(a)}));
+  const elegir = matches => matches.find(h => h.i >= minIndex) || matches[0];
+  for(const a of aliasInfo){
+    const exact = headerInfo.filter(h => h.norm === a.norm);
+    if(exact.length) return elegir(exact).i;
+  }
+  for(const a of aliasInfo){
+    const exactCompact = headerInfo.filter(h => h.compact === a.compact);
+    if(exactCompact.length) return elegir(exactCompact).i;
+  }
+  for(const a of aliasInfo){
+    if(a.compact.length < 4) continue;
+    const parcial = headerInfo.filter(h => h.compact.includes(a.compact) || a.compact.includes(h.compact));
+    if(parcial.length) return elegir(parcial).i;
+  }
+  return -1;
+}
 
 function abrirModalBBDD(){
   const m = document.getElementById('modal-bbdd');
@@ -1355,21 +1922,27 @@ function procesarBBDD(){
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
       // Fila 4 = índice 3
       const header = rows[3].map(h => h ? String(h).trim() : null);
+      const headerInfo = header.map((h, i) => ({
+        i,
+        raw: h,
+        norm: normHeader(h),
+        compact: compactHeader(h),
+      }));
 
-      // Normalizar cabecera: sin saltos de línea, sin acentos, lowercase, sin espacios extra
-      const norm = s => s ? s.replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
-      const headerNorm = header.map(norm);
-
-      // Validar campos esperados con búsqueda flexible
-      const faltantes = [];
+      // Detectar todas las columnas por nombre de cabecera.
       const idx = {};
-      for(const [nombre, clave] of Object.entries(CAMPOS_ESPERADOS)){
-        const nombreNorm = norm(nombre);
-        const i = headerNorm.indexOf(nombreNorm);
-        if(i === -1) faltantes.push(nombre);
-        else idx[clave] = i;
+      let minIndex = 0;
+      for(const [clave, aliases] of Object.entries(FIELD_ALIASES)){
+        const i = buscarColumna(headerInfo, aliases, minIndex);
+        if(i !== -1){
+          idx[clave] = i;
+          minIndex = i + 1;
+        }
       }
+
+      const faltantes = CAMPOS_REQUERIDOS
+        .filter(([_, clave]) => idx[clave] === undefined)
+        .map(([nombre]) => nombre);
 
       if(faltantes.length){
         res.innerHTML = `<span style="color:#d97706">⚠️ ${faltantes.length} campo(s) no encontrado(s):<br><small>${faltantes.join(', ')}</small><br><br>¿Continuar igualmente?</span>
@@ -1402,40 +1975,41 @@ function cargarDatos(rows, idx){
   };
   const fnum = v => { if(v===null||v===''||v===undefined) return null; const n=parseFloat(v); return isNaN(n)?null:Math.round(n*100)/100; };
   const fstr = v => { if(v===null||v===undefined||String(v).trim()==='') return null; return String(v).trim(); };
+  const celda = (row, clave) => idx && idx[clave] !== undefined ? row[idx[clave]] : null;
 
   const nuevos = [];
   for(let r=5; r<rows.length; r++){
     const row = rows[r];
-    if(!row || !row[COL.arrendatario]) continue;
-    if(row[COL.ocupacion] !== 'ALQ') continue;
-    const ref = fstr(row[COL.ref]);
-    const piso = row[COL.piso];
-    const puerta = fstr(row[COL.puerta]);
+    if(!row || !celda(row,'arrendatario')) continue;
+    if((fstr(celda(row,'ocupacion'))||'').toUpperCase() !== 'ALQ') continue;
+    const ref = fstr(celda(row,'ref'));
+    const piso = celda(row,'piso');
+    const puerta = fstr(celda(row,'puerta'));
     nuevos.push({
-      ua: String(r-4), ref, refua: `${ref}_${piso}_${puerta}`, uso: fstr(row[COL.uso]),
-      direccion: fstr(row[COL.direccion]), portal: fstr(row[COL.portal]),
-      piso, puerta, municipio: fstr(row[COL.municipio]),
-      arrendatario: fstr(row[COL.arrendatario]), nif: fstr(row[COL.nif]),
-      telefono: fstr(row[COL.telefono]), mail: fstr(row[COL.mail]),
-      tipo_contrato: fstr(row[COL.uso]), f_inicio: fdate(row[COL.f_inicio]),
-      contracte: fnum(row[COL.contracte]), cs_contrato: fnum(row[COL.cs_contrato]),
-      tipo_fin: fstr(row[COL.tipo_fin]), fecha_fin: fdate(row[COL.fecha_fin]),
-      preaviso_fin: fdate(row[COL.preaviso_fin]),
-      tipo_revision: fstr(row[COL.tipo_revision]), fecha_revision_renta: fdate(row[COL.fecha_revision_renta]),
-      fi_incasol: fnum(row[COL.fi_incasol]), fianza_adicional: fnum(row[COL.fianza_adicional]),
-      fi_importe: fnum(row[COL.fi_importe]), via_cobro: fstr(row[COL.via_cobro]),
-      cl_repercusion: fstr(row[COL.cl_repercusion]), cl_escalera: fstr(row[COL.cl_escalera]),
-      cl_luz_escalera: fstr(row[COL.cl_luz_escalera]), cl_tasas: fstr(row[COL.cl_tasas]),
-      cl_ibi: fstr(row[COL.cl_ibi]), cl_agua: fstr(row[COL.cl_agua]),
-      cl_electrodomesticos: fstr(row[COL.cl_electrodomesticos]), cl_caldera: fstr(row[COL.cl_caldera]),
-      cl_seguro: fstr(row[COL.cl_seguro]),
-      m2_adoptada: fnum(row[COL.m2_adoptada]), m2_alquilable: fnum(row[COL.m2_alquilable]),
-      precio_m2_alquilable: fnum(row[COL.precio_m2_alquilable]), const_proym2: fnum(row[COL.const_proym2]),
-      registro_cee: fstr(row[COL.registro_cee]), calif_cee: fstr(row[COL.calif_cee]),
-      fecha_fin_cee: fdate(row[COL.fecha_fin_cee]), num_cedula: fstr(row[COL.num_cedula]),
-      chb_caducidad: fdate(row[COL.chb_caducidad]),
-      estado_actual: fstr(row[COL.estado_actual]), subarriendo: fstr(row[COL.subarriendo]),
-      bi: fnum(row[COL.bi]), pct_iva: fnum(row[COL.pct_iva]),
+      ua: fstr(celda(row,'ua')) || String(r-4), ref, refua: `${ref}_${piso}_${puerta}`, uso: fstr(celda(row,'uso')),
+      direccion: fstr(celda(row,'direccion')), portal: fstr(celda(row,'portal')),
+      piso, puerta, municipio: fstr(celda(row,'municipio')),
+      arrendatario: fstr(celda(row,'arrendatario')), nif: fstr(celda(row,'nif')),
+      telefono: fstr(celda(row,'telefono')), mail: fstr(celda(row,'mail')),
+      tipo_contrato: fstr(celda(row,'uso')), f_inicio: fdate(celda(row,'f_inicio')),
+      contracte: fnum(celda(row,'contracte')), cs_contrato: fnum(celda(row,'cs_contrato')),
+      tipo_fin: fstr(celda(row,'tipo_fin')), fecha_fin: fdate(celda(row,'fecha_fin')),
+      preaviso_fin: fdate(celda(row,'preaviso_fin')),
+      tipo_revision: fstr(celda(row,'tipo_revision')), fecha_revision_renta: fdate(celda(row,'fecha_revision_renta')),
+      fi_incasol: fnum(celda(row,'fi_incasol')), fianza_adicional: fnum(celda(row,'fianza_adicional')),
+      fi_importe: fnum(celda(row,'fi_importe')), via_cobro: fstr(celda(row,'via_cobro')),
+      cl_repercusion: fstr(celda(row,'cl_repercusion')), cl_escalera: fstr(celda(row,'cl_escalera')),
+      cl_luz_escalera: fstr(celda(row,'cl_luz_escalera')), cl_tasas: fstr(celda(row,'cl_tasas')),
+      cl_ibi: fstr(celda(row,'cl_ibi')), cl_agua: fstr(celda(row,'cl_agua')),
+      cl_electrodomesticos: fstr(celda(row,'cl_electrodomesticos')), cl_caldera: fstr(celda(row,'cl_caldera')),
+      cl_seguro: fstr(celda(row,'cl_seguro')),
+      m2_adoptada: fnum(celda(row,'m2_adoptada')), m2_alquilable: fnum(celda(row,'m2_alquilable')),
+      precio_m2_alquilable: fnum(celda(row,'precio_m2_alquilable')), const_proym2: fnum(celda(row,'const_proym2')),
+      registro_cee: fstr(celda(row,'registro_cee')), calif_cee: fstr(celda(row,'calif_cee')),
+      fecha_fin_cee: fdate(celda(row,'fecha_fin_cee')), num_cedula: fstr(celda(row,'num_cedula')),
+      chb_caducidad: fdate(celda(row,'chb_caducidad')),
+      estado_actual: fstr(celda(row,'estado_actual')), subarriendo: fstr(celda(row,'subarriendo')),
+      bi: fnum(celda(row,'bi')), pct_iva: fnum(celda(row,'pct_iva')),
     });
   }
 
@@ -1445,21 +2019,23 @@ function cargarDatos(rows, idx){
   renderStats();
   renderLista();
   res.innerHTML = `<span style="color:#16a34a">✅ Base de datos actualizada: <strong>${nuevos.length} unidades ALQ</strong> cargadas.</span>`;
+  guardarBaseDatosOneDrive();
+  programarGuardarEstado();
   setTimeout(cerrarModalBBDD, 2000);
 }
 
 // --- FOTOS CLAUSULAS ---
-function onFotosClausulas(ev){
+async function onFotosClausulas(ev){
   const files = Array.from(ev.target.files||[]);
   if(!clausulasFotosStore[inquilino.ua]) clausulasFotosStore[inquilino.ua]=[];
-  files.forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = e=>{
-      clausulasFotosStore[inquilino.ua].push({id:newId(), dataUrl:e.target.result});
-      renderFotosClausulas();
-    };
-    reader.readAsDataURL(file);
-  });
+  let i = 1;
+  for(const file of files){
+    const foto = {id:newId(), nombre:file.name, dataUrl:await fileToDataUrl(file)};
+    clausulasFotosStore[inquilino.ua].push(foto);
+    renderFotosClausulas();
+    try{ Object.assign(foto, await subirArchivoApp(file, 'clausulas', 'clausula', i++)); } catch(e){ console.warn('Foto cláusula sin subir a OneDrive', e); }
+  }
+  programarGuardarEstado();
   ev.target.value='';
 }
 
@@ -1467,7 +2043,7 @@ function renderFotosClausulas(){
   if(!inquilino) return;
   const fotos = clausulasFotosStore[inquilino.ua]||[];
   document.getElementById('cl-fotos-preview').innerHTML = fotos.map(f=>
-    `<span class="foto-thumb-wrap"><img src="${f.dataUrl}" class="foto-thumb"><button type="button" class="foto-del" onclick="quitarFotoClausula('${f.id}')">✕</button></span>`
+    fotoThumbHtml(f, `<button type="button" class="foto-del" onclick="quitarFotoClausula('${f.id}')">✕</button>`)
   ).join('');
 }
 
@@ -1475,10 +2051,10 @@ function quitarFotoClausula(id){
   if(!confirm('¿Eliminar esta foto?')) return;
   clausulasFotosStore[inquilino.ua] = (clausulasFotosStore[inquilino.ua]||[]).filter(f=>f.id!==id);
   renderFotosClausulas();
+  programarGuardarEstado();
 }
 
 // --- DOCUMENTOS ---
-const docsStore = {};
 let editingDocId = null;
 
 function renderDocs(){
@@ -1493,10 +2069,10 @@ function renderDocs(){
     <div class="doc-item" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--slate-50);border-radius:10px;margin-bottom:7px">
       <span style="font-size:22px">📄</span>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${doc.nombre}</div>
-        <div style="font-size:11px;color:var(--slate-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${doc.url}</div>
+        <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(doc.nombre)}</div>
+        <div style="font-size:11px;color:var(--slate-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(doc.url || doc.webUrl || '')}</div>
       </div>
-      <a href="${doc.url}" target="_blank" class="btn-save" style="font-size:11px;padding:5px 10px;white-space:nowrap;text-decoration:none">Abrir</a>
+      <a href="${escHtml(doc.url || doc.webUrl || '#')}" target="_blank" class="btn-save" style="font-size:11px;padding:5px 10px;white-space:nowrap;text-decoration:none">Abrir</a>
       <button class="btn-link" onclick="editarDoc('${doc.id}')">✏️</button>
       <button class="btn-link danger" onclick="borrarDoc('${doc.id}')">🗑️</button>
     </div>`
@@ -1507,6 +2083,7 @@ function toggleDocForm(){
   document.getElementById('doc-form').classList.toggle('vis');
   if(!document.getElementById('doc-form').classList.contains('vis')){
     editingDocId=null;
+    docOneDriveMeta=null;
     document.getElementById('doc-nombre').value='';
     document.getElementById('doc-url').value='';
   }
@@ -1520,20 +2097,23 @@ function guardarDoc(){
   if(!docsStore[inquilino.ua]) docsStore[inquilino.ua]=[];
   if(editingDocId){
     const d = docsStore[inquilino.ua].find(x=>x.id===editingDocId);
-    if(d){d.nombre=nombre;d.url=url;}
+    if(d){Object.assign(d, docOneDriveMeta || {}, {nombre,url});}
   } else {
-    docsStore[inquilino.ua].push({id:newId(),nombre,url});
+    docsStore[inquilino.ua].push({id:newId(), ...(docOneDriveMeta || {}), nombre, url});
   }
+  docOneDriveMeta=null;
   toggleDocForm();
   renderDocs();
+  programarGuardarEstado();
 }
 
 function editarDoc(id){
   const doc = (docsStore[inquilino.ua]||[]).find(x=>x.id===id);
   if(!doc) return;
   editingDocId=id;
+  docOneDriveMeta = {...doc};
   document.getElementById('doc-nombre').value=doc.nombre;
-  document.getElementById('doc-url').value=doc.url;
+  document.getElementById('doc-url').value=doc.url || doc.webUrl || '';
   document.getElementById('doc-form').classList.add('vis');
 }
 
@@ -1541,6 +2121,24 @@ function borrarDoc(id){
   if(!confirm('¿Eliminar este documento?')) return;
   docsStore[inquilino.ua]=(docsStore[inquilino.ua]||[]).filter(x=>x.id!==id);
   renderDocs();
+  programarGuardarEstado();
+}
+
+async function subirDocumentoDesdeInput(ev){
+  if(!inquilino) return;
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  try{
+    const meta = await subirArchivoApp(file, 'datos', 'documento', 1);
+    docOneDriveMeta = {...meta, url:meta.webUrl};
+    document.getElementById('doc-nombre').value = document.getElementById('doc-nombre').value.trim() || file.name;
+    document.getElementById('doc-url').value = meta.webUrl || '';
+    document.getElementById('doc-form').classList.add('vis');
+  } catch(e){
+    alert('No se pudo subir el documento a OneDrive: ' + (e.message || e));
+  } finally {
+    ev.target.value='';
+  }
 }
 
 // INIT
