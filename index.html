@@ -342,7 +342,7 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
     </div>
     <div class="search-wrap">
       <span class="ico">🔍</span>
-      <input type="text" id="search" placeholder="Buscar por nombre, dirección, NIF..." oninput="renderLista()">
+      <input type="text" id="search" placeholder="Buscar por nombre, piso, referencia, NIF..." oninput="renderLista()">
     </div>
     <div class="filter-row">
       <button class="pill active" onclick="setFiltro('todos',this)">Todos</button>
@@ -526,7 +526,6 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
             <input type="url" id="od-link-input" placeholder="https://onedrive.live.com/...">
           </div>
           <div class="form-actions">
-            <button class="btn-cancel" onclick="abrirOneDrivePicker('folder','fotos')">Buscar carpeta en OneDrive</button>
             <button class="btn-save" onclick="guardarOdLink()">Guardar enlace</button>
           </div>
           <div id="od-link-view" style="margin-top:14px"></div>
@@ -563,7 +562,6 @@ body{font-family:'Inter',sans-serif;background:var(--slate-100);color:var(--slat
               <input type="url" id="doc-url" placeholder="https://onedrive.live.com/...">
             </div>
             <div class="form-actions" style="justify-content:flex-start;margin-bottom:8px">
-              <button class="btn-cancel" onclick="abrirOneDrivePicker('any','documento')">Buscar en OneDrive</button>
               <label class="btn-cancel" style="cursor:pointer">Subir documento
                 <input type="file" id="doc-file-input" onchange="subirDocumentoDesdeInput(event)" style="display:none">
               </label>
@@ -945,17 +943,38 @@ async function guardarBaseDatosOneDrive(){
   }
 }
 
-function abrirFotoViewer(src, href){
+const oneDrivePreviewUrls = {};
+
+async function abrirFotoViewer(src, href, oneDriveId=''){
   const m = document.getElementById('foto-viewer');
   const img = document.getElementById('foto-viewer-img');
   const link = document.getElementById('foto-viewer-link');
   const a = document.getElementById('foto-viewer-a');
+  m.style.display='flex';
   if(src && String(src).startsWith('data:image')){
     img.src = src; img.style.display='block'; link.style.display='none';
+  } else if(oneDriveId){
+    img.style.display='none';
+    link.style.display='block';
+    a.href = href || '#';
+    document.querySelector('#foto-viewer-link p').textContent = 'Cargando vista previa desde OneDrive...';
+    try{
+      if(!oneDrivePreviewUrls[oneDriveId]){
+        const resp = await graphFetch(`/me/drive/items/${encodeURIComponent(oneDriveId)}/content`);
+        const blob = await resp.blob();
+        oneDrivePreviewUrls[oneDriveId] = URL.createObjectURL(blob);
+      }
+      img.src = oneDrivePreviewUrls[oneDriveId];
+      img.style.display='block';
+      link.style.display='none';
+    } catch(e){
+      document.querySelector('#foto-viewer-link p').textContent = 'Este archivo está guardado en OneDrive.';
+      console.warn('No se pudo previsualizar la foto desde OneDrive', e);
+    }
   } else {
     img.style.display='none'; link.style.display='block'; a.href = href || src || '#';
+    document.querySelector('#foto-viewer-link p').textContent = 'Este archivo está guardado en OneDrive.';
   }
-  m.style.display='flex';
 }
 
 function cerrarFotoViewer(){
@@ -968,9 +987,10 @@ function fotoThumbHtml(f, deleteHtml=''){
   const href = fileOpenUrl(f);
   const safeSrc = escHtml(src || '');
   const safeHref = escHtml(href || '');
+  const safeId = escHtml(f?.oneDriveId || '');
   const inner = src && String(src).startsWith('data:image')
-    ? `<img src="${safeSrc}" class="foto-thumb" onclick="abrirFotoViewer('${safeSrc}','${safeHref}')">`
-    : `<span class="foto-ph" onclick="abrirFotoViewer('','${safeHref}')">🖼️</span>`;
+    ? `<img src="${safeSrc}" class="foto-thumb" onclick="abrirFotoViewer('${safeSrc}','${safeHref}','${safeId}')">`
+    : `<span class="foto-ph" onclick="abrirFotoViewer('','${safeHref}','${safeId}')">🖼️</span>`;
   return `<span class="foto-thumb-wrap">${inner}${deleteHtml}</span>`;
 }
 
@@ -995,7 +1015,8 @@ function odPathParts(path){
 
 async function abrirOneDrivePicker(mode='folder', target='fotos'){
   odPickerState = {mode, target, path:''};
-  document.getElementById('od-picker-title').textContent = target === 'fotos'
+  const pathLabel = document.getElementById('od-picker-path');
+  if(pathLabel) pathLabel.textContent = target === 'fotos'
     ? 'Seleccionar carpeta de fotos'
     : 'Seleccionar documento o carpeta';
   document.getElementById('od-picker').style.display='flex';
@@ -1003,8 +1024,10 @@ async function abrirOneDrivePicker(mode='folder', target='fotos'){
 }
 
 async function renderOneDrivePicker(){
-  const body = document.getElementById('od-picker-body');
+  const body = document.getElementById('od-picker-list');
+  const pathLabel = document.getElementById('od-picker-path');
   const path = odPickerState.path || '';
+  if(pathLabel) pathLabel.textContent = '/' + path;
   body.innerHTML = '<p style="font-size:12px;color:var(--slate-400)">Cargando OneDrive...</p>';
   try{
     const items = await listarOneDrive(path);
@@ -1043,6 +1066,20 @@ async function renderOneDrivePicker(){
   } catch(e){
     body.innerHTML = `<p style="font-size:12px;color:#dc2626">No se pudo abrir OneDrive. ${escHtml(e.message||e)}</p>`;
   }
+}
+
+function odPickerSeleccionarCarpetaActual(){
+  odPickerUsarCarpeta();
+}
+
+function odPickerSubir(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.style.display = 'none';
+  input.onchange = ev => odPickerSubirArchivo(ev);
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(()=>input.remove(), 30000);
 }
 
 async function odPickerEntrar(idx){
@@ -1160,7 +1197,9 @@ function renderLista(){
   const list = document.getElementById('ua-list');
   let items = DATA.filter(d => {
     const matchFiltro = filtroActivo === 'todos' || (d.uso && d.uso.toLowerCase().includes(filtroActivo.toLowerCase()));
-    const matchQ = !q || [d.arrendatario,d.direccion,d.nif,d.ua,d.ref,d.municipio].some(v=>v&&v.toLowerCase().includes(q));
+    const refCompleta = [d.ref, d.piso, d.puerta].filter(v=>v!==null&&v!==undefined&&v!=='').join('_');
+    const matchQ = !q || [d.arrendatario,d.direccion,d.nif,d.ua,d.ref,d.refua,refCompleta,d.piso,d.puerta,d.municipio]
+      .some(v=>v!==null&&v!==undefined&&String(v).toLowerCase().includes(q));
     return matchFiltro && matchQ;
   });
 
@@ -1981,7 +2020,6 @@ function cargarDatos(rows, idx){
   for(let r=5; r<rows.length; r++){
     const row = rows[r];
     if(!row || !celda(row,'arrendatario')) continue;
-    if((fstr(celda(row,'ocupacion'))||'').toUpperCase() !== 'ALQ') continue;
     const ref = fstr(celda(row,'ref'));
     const piso = celda(row,'piso');
     const puerta = fstr(celda(row,'puerta'));
@@ -2018,7 +2056,7 @@ function cargarDatos(rows, idx){
   nuevos.forEach(d => DATA.push(d));
   renderStats();
   renderLista();
-  res.innerHTML = `<span style="color:#16a34a">✅ Base de datos actualizada: <strong>${nuevos.length} unidades ALQ</strong> cargadas.</span>`;
+  res.innerHTML = `<span style="color:#16a34a">✅ Base de datos actualizada: <strong>${nuevos.length} registros</strong> cargados.</span>`;
   guardarBaseDatosOneDrive();
   programarGuardarEstado();
   setTimeout(cerrarModalBBDD, 2000);
